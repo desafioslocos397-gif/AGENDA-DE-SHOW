@@ -115,8 +115,9 @@ pdf.setFont('helvetica','normal');pdf.setFontSize(8);
 pdf.text('TikTok: @desafiolocosmtv  |  Facebook: Desafios locos mtv  |  YouTube: @DESAFIOSLOCOS',margen+7,y+25);
 y+=35;
 texto('Instagram: desafioslocosmtv',margen,y,8.5);
-pdf.setFont('helvetica','bold');pdf.setFontSize(8.5);pdf.setTextColor(...color);pdf.text('WhatsApp: 811 027 6858',ancho-margen,y,{align:'right'});
-y+=7;
+y+=5;
+texto('WhatsApp: 811 027 6858',margen,y,9,true);
+y+=8;
 // Datos del evento
 seccion('Datos del evento');
 let y1=y,y2=y;
