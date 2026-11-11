@@ -5,7 +5,7 @@ const horarios=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00',
 const form=document.querySelector('#eventoForm'), horaSelect=form.elements.hora, fechaInput=form.elements.fecha;
 
 const dialog=document.querySelector('#detalleDialog');
-let eventos=leerEventos(), seleccionado=null;
+let eventos=leerEventos(), seleccionado=null, editandoId=null;
 
 const hoy=new Date();
 fechaInput.min=fechaLocal(hoy);
@@ -23,7 +23,7 @@ function seCruzan(inicioA,finA,inicioB,finB){return inicioA<finB&&inicioB<finA}
 function llenarHorarios(){const fecha=fechaInput.value;
 horaSelect.innerHTML='<option value="">Selecciona horario</option>';
 horarios.forEach(h=>{const inicio=minutosHora(h),fin=inicio+duracionMinutos(form.elements.duracion.value);
-const ocupado=eventos.some(e=>{if(e.fecha!==fecha)return false;const otroInicio=minutosHora(e.hora),otroFin=otroInicio+duracionMinutos(e.duracion);return seCruzan(inicio,fin,otroInicio,otroFin)});
+const ocupado=eventos.some(e=>{if(e.id===editandoId||e.fecha!==fecha)return false;const otroInicio=minutosHora(e.hora),otroFin=otroInicio+duracionMinutos(e.duracion);return seCruzan(inicio,fin,otroInicio,otroFin)});
 const o=document.createElement('option');o.value=h;o.textContent=horaAMPM(h)+(ocupado?' · OCUPADO':'');o.disabled=ocupado;horaSelect.append(o)})}
 fechaInput.addEventListener('change',llenarHorarios);
 form.elements.duracion.addEventListener('change',llenarHorarios);
@@ -56,14 +56,25 @@ document.querySelector('#filtroFecha').addEventListener('change',renderLista);
 form.addEventListener('submit',ev=>{ev.preventDefault();
 const data=Object.fromEntries(new FormData(form).entries());
 const inicioNuevo=minutosHora(data.hora),finNuevo=inicioNuevo+duracionMinutos(data.duracion);
-if(eventos.some(e=>{if(e.fecha!==data.fecha)return false;const inicioExistente=minutosHora(e.hora),finExistente=inicioExistente+duracionMinutos(e.duracion);return seCruzan(inicioNuevo,finNuevo,inicioExistente,finExistente)})){document.querySelector('#formMsg').textContent='Ese horario se cruza con otra reservación. Elige otro.';return}data.id=String(Date.now());
+if(eventos.some(e=>{if(e.fecha!==data.fecha)return false;const inicioExistente=minutosHora(e.hora),finExistente=inicioExistente+duracionMinutos(e.duracion);return seCruzan(inicioNuevo,finNuevo,inicioExistente,finExistente)})){document.querySelector('#formMsg').textContent='Ese horario se cruza con otra reservación. Elige otro.';return}if(editandoId){
+const indice=eventos.findIndex(e=>e.id===editandoId);
+if(indice>=0){data.id=editandoId;eventos[indice]=data;}
+editandoId=null;
+document.querySelector('#guardarEventoBtn').textContent='＋ Guardar evento';
+document.querySelector('#cancelarEdicionBtn').hidden=true;
+fechaInput.min=fechaLocal(hoy);
+document.querySelector('.panel-head .eyebrow').textContent='NUEVA RESERVACIÓN';
+document.querySelector('#formMsg').textContent='¡Cambios guardados correctamente!';
+}else{
+data.id=String(Date.now());
 eventos.push(data);
+document.querySelector('#formMsg').textContent='¡Evento guardado correctamente!';
+}
 guardar();
 actualizar();
 form.reset();
 form.elements.fecha.value=fechaLocal(hoy);
 llenarHorarios();
-document.querySelector('#formMsg').textContent='¡Evento guardado correctamente!';
 });
 
 function abrirDetalle(id){seleccionado=eventos.find(e=>e.id===id);
@@ -75,6 +86,29 @@ cont.innerHTML='<div class="detail-grid">'+campos.map(([k,v])=>'<div class="deta
 cont.querySelectorAll('.detail b').forEach((b,i)=>b.textContent=campos[i][1]);
 dialog.showModal()}
 document.querySelector('#cerrarDialog').onclick=()=>dialog.close();
+document.querySelector('#editarBtn').onclick=()=>{
+if(!seleccionado)return;
+editandoId=seleccionado.id;
+const e=seleccionado;
+Object.keys(e).forEach(k=>{if(form.elements[k])form.elements[k].value=e[k]??''});
+fechaInput.min='';
+document.querySelector('#guardarEventoBtn').textContent='Guardar cambios';
+document.querySelector('#cancelarEdicionBtn').hidden=false;
+document.querySelector('.panel-head .eyebrow').textContent='EDITANDO RESERVACIÓN';
+document.querySelector('#formMsg').textContent='Modifica los datos y presiona Guardar cambios.';
+dialog.close();
+llenarHorarios();
+document.querySelector('#eventoForm').scrollIntoView({behavior:'smooth',block:'start'});
+};
+document.querySelector('#cancelarEdicionBtn').onclick=()=>{
+editandoId=null;form.reset();fechaInput.min=fechaLocal(hoy);fechaInput.value=fechaLocal(hoy);
+document.querySelector('#guardarEventoBtn').textContent='＋ Guardar evento';
+document.querySelector('#cancelarEdicionBtn').hidden=true;
+document.querySelector('.panel-head .eyebrow').textContent='NUEVA RESERVACIÓN';
+document.querySelector('#formMsg').textContent='Edición cancelada.';
+llenarHorarios();
+};
+
 
 function mensajeWhats(e){return 'Hola, te comparto los datos de la reservación de Desafíos Locos:%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0')))+'%0AEvento: '+encodeURIComponent(e.tipo)+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0APrecio: '+encodeURIComponent(e.precio||'Por confirmar')+'%0AAnticipo: '+encodeURIComponent(e.anticipo||'Por confirmar')+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
 function abrirWhatsApp(numero){if(!seleccionado)return;
