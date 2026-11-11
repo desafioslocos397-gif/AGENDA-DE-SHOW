@@ -1,7 +1,7 @@
 const STORAGE_KEY='desafiosLocosAgendaV1';
 const CONFIG_KEY='agendaShowConfigV1';
 const CONFIG_DEFAULTS={
-showName:'DESAFÍOS LOCOS',representative:'DANIEL LEON',whatsapp:'811 027 6858',
+showName:'DESAFÍOS LOCOS',logoData:'',representative:'DANIEL LEON',whatsapp:'811 027 6858',
 tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',
 includes:'1 HORA DE SHOW 100% DINÁMICO\nANIMACIÓN CÓMICA\nPREMIOS PARA CONCURSANTES\nDESAFÍOS Y CONCURSOS\nLLUVIA DE BURBUJAS\nPELOTAS GIGANTES\nCARNAVAL Y BANDERINES\nPARTICIPACIÓN EN EL PASTEL\nEQUIPO DE SONIDO',
 clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\n3. En caso de cancelar su evento, su anticipo no será devuelto.\n4. Firme si usted está de acuerdo.\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
@@ -9,12 +9,16 @@ clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y hora
 function leerConfig(){try{return {...CONFIG_DEFAULTS,...JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}')}}catch{return {...CONFIG_DEFAULTS}}}
 let config=leerConfig();
 function guardarConfig(){localStorage.setItem(CONFIG_KEY,JSON.stringify(config))}
-function prepararFormularioConfig(){const f=document.querySelector('#configForm');Object.keys(config).forEach(k=>{if(f.elements[k])f.elements[k].value=config[k]??''})}
+function actualizarLogotipo(){const logo=document.querySelector('#brandLogo'),marca=document.querySelector('#brandMark'),preview=document.querySelector('#logoPreview');if(config.logoData){logo.src=config.logoData;logo.hidden=false;marca.hidden=true;preview.src=config.logoData;preview.hidden=false}else{logo.hidden=true;logo.removeAttribute('src');marca.hidden=false;preview.hidden=true;preview.removeAttribute('src')}}
+function prepararFormularioConfig(){const f=document.querySelector('#configForm');Object.keys(config).forEach(k=>{if(f.elements[k]&&f.elements[k].type!=='file')f.elements[k].value=config[k]??''});actualizarLogotipo()}
+const logoInput=document.querySelector('#logoInput');
+logoInput.addEventListener('change',()=>{const archivo=logoInput.files&&logoInput.files[0];if(!archivo)return;if(!archivo.type.startsWith('image/')){alert('Selecciona una imagen válida.');logoInput.value='';return}const lector=new FileReader();lector.onload=()=>{const imagen=new Image();imagen.onload=()=>{const escala=Math.min(1,600/Math.max(imagen.width,imagen.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(imagen.width*escala));canvas.height=Math.max(1,Math.round(imagen.height*escala));canvas.getContext('2d').drawImage(imagen,0,0,canvas.width,canvas.height);config.logoData=canvas.toDataURL('image/jpeg',0.86);try{guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Logotipo guardado. También aparecerá en el contrato PDF.'}catch(err){config.logoData='';alert('La imagen es demasiado grande para guardarla. Prueba con otra más pequeña.')}};imagen.onerror=()=>alert('No se pudo abrir esa imagen.');imagen.src=lector.result};lector.readAsDataURL(archivo)});
+actualizarLogotipo()
 const configDialog=document.querySelector('#configDialog');
 document.querySelector('#configurarContratoBtn').addEventListener('click',()=>{prepararFormularioConfig();document.querySelector('#configMsg').textContent='';configDialog.showModal()});
 document.querySelector('#cerrarConfig').addEventListener('click',()=>configDialog.close());
-document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...CONFIG_DEFAULTS,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
-document.querySelector('#restaurarConfig').addEventListener('click',()=>{if(!confirm('¿Restaurar los datos iniciales del contrato?'))return;config={...CONFIG_DEFAULTS};guardarConfig();prepararFormularioConfig();document.querySelector('#configMsg').textContent='Se restauraron los datos iniciales.'});
+document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...config,...CONFIG_DEFAULTS,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
+document.querySelector('#restaurarConfig').addEventListener('click',()=>{if(!confirm('¿Restaurar los datos iniciales del contrato?'))return;config={...CONFIG_DEFAULTS};guardarConfig();logoInput.value='';prepararFormularioConfig();document.querySelector('#configMsg').textContent='Se restauraron los datos iniciales.'});
 
 const horarios=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
 
@@ -159,10 +163,13 @@ const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).p
 const mitad=(util-12)/2;
 // Encabezado amplio
 pdf.setFillColor(35,28,65);pdf.roundedRect(margen,y,util,29,2.5,2.5,'F');
-pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);pdf.text(String(config.showName||'SHOW').toUpperCase(),margen+7,y+11);
-pdf.setFontSize(11);pdf.text('CONTRATO DE SERVICIO DE SHOW',margen+7,y+19);
+pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);
+const inicioTexto=config.logoData?margen+32:margen+7;
+if(config.logoData){try{pdf.addImage(config.logoData,'JPEG',margen+6,y+4,22,22,'logoShow','FAST')}catch(err){console.warn('No se pudo insertar el logotipo en el PDF',err)}}
+pdf.text(String(config.showName||'SHOW').toUpperCase(),inicioTexto,y+11);
+pdf.setFontSize(11);pdf.text('CONTRATO DE SERVICIO DE SHOW',inicioTexto,y+19);
 pdf.setFont('helvetica','normal');pdf.setFontSize(8);
-pdf.text(('TikTok: '+(config.tiktok||'')+'  |  Facebook: '+(config.facebook||'')+'  |  YouTube: '+(config.youtube||'')).slice(0,115),margen+7,y+25);
+pdf.text(('TikTok: '+(config.tiktok||'')+'  |  Facebook: '+(config.facebook||'')+'  |  YouTube: '+(config.youtube||'')).slice(0,115),inicioTexto,y+25);
 y+=35;
 if(config.instagram)texto('Instagram: '+config.instagram,margen,y,8.5);
 y+=5;
