@@ -1,7 +1,7 @@
 const STORAGE_KEY='desafiosLocosAgendaV1';
 const CONFIG_KEY='agendaShowConfigV1';
 const CONFIG_DEFAULTS={
-showName:'DESAFÍOS LOCOS',logoData:'',pdfBackgroundColor:'#ffffff',pdfBackgroundData:'',representative:'DANIEL LEON',whatsapp:'811 027 6858',
+showName:'DESAFÍOS LOCOS',logoData:'',pdfBackgroundData:'',representative:'DANIEL LEON',whatsapp:'811 027 6858',
 tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',
 includes:'1 HORA DE SHOW 100% DINÁMICO\nANIMACIÓN CÓMICA\nPREMIOS PARA CONCURSANTES\nDESAFÍOS Y CONCURSOS\nLLUVIA DE BURBUJAS\nPELOTAS GIGANTES\nCARNAVAL Y BANDERINES\nPARTICIPACIÓN EN EL PASTEL\nEQUIPO DE SONIDO',
 clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\n3. En caso de cancelar su evento, su anticipo no será devuelto.\n4. Firme si usted está de acuerdo.\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
@@ -157,9 +157,7 @@ if(!seleccionado)return;
 if(!window.jspdf||!window.jspdf.jsPDF){alert('No se pudo cargar el generador de PDF. Revisa tu conexión a internet e inténtalo de nuevo.');return}
 const e=seleccionado,{jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'letter'});
 const ancho=pdf.internal.pageSize.getWidth(),altoPagina=pdf.internal.pageSize.getHeight(),margen=16,util=ancho-margen*2;
-// Fondo personalizable de la hoja del contrato
-const hex=String(config.pdfBackgroundColor||'#ffffff').replace('#','');
-if(/^[0-9a-fA-F]{6}$/.test(hex)){pdf.setFillColor(parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16));pdf.rect(0,0,ancho,altoPagina,'F')}
+// Fondo de imagen a página completa, sin selector de color.
 if(config.pdfBackgroundData){try{pdf.addImage(config.pdfBackgroundData,'JPEG',0,0,ancho,altoPagina,'fondoContrato','FAST')}catch(err){console.warn('No se pudo insertar el fondo del contrato',err)}}
 let y=14;
 const color=[45,40,65],morado=[103,70,220];
