@@ -10,7 +10,7 @@ function leerConfig(){try{return {...CONFIG_DEFAULTS,...JSON.parse(localStorage.
 let config=leerConfig();
 function guardarConfig(){localStorage.setItem(CONFIG_KEY,JSON.stringify(config))}
 function actualizarLogotipo(){const logo=document.querySelector('#brandLogo'),marca=document.querySelector('#brandMark'),preview=document.querySelector('#logoPreview');if(config.logoData){logo.src=config.logoData;logo.hidden=false;marca.hidden=true;preview.src=config.logoData;preview.hidden=false}else{logo.hidden=true;logo.removeAttribute('src');marca.hidden=false;preview.hidden=true;preview.removeAttribute('src')}}
-function prepararFormularioConfig(){const f=document.querySelector('#configForm');Object.keys(config).forEach(k=>{if(f.elements[k]&&f.elements[k].type!=='file')f.elements[k].value=config[k]??''});actualizarLogotipo()}
+function prepararFormularioConfig(){const f=document.querySelector('#configForm');Object.keys(config).forEach(k=>{if(f.elements[k]&&f.elements[k].type!=='file')f.elements[k].value=config[k]??''});actualizarLogotipo();actualizarVistaFondo()}
 const fondoInput=document.querySelector('#pdfBackgroundInput');
 const fondoPreview=document.querySelector('#pdfBackgroundPreview');
 function actualizarVistaFondo(){if(config.pdfBackgroundData){fondoPreview.src=config.pdfBackgroundData;fondoPreview.hidden=false}else{fondoPreview.hidden=true;fondoPreview.removeAttribute('src')}}
