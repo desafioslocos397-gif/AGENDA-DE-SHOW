@@ -97,35 +97,33 @@ pdf.setFillColor(35,28,65);pdf.rect(0,0,ancho,38,'F');pdf.setTextColor(255,255,2
 pdf.setTextColor(35,29,55);y=51;pdf.setFont('helvetica','bold');pdf.setFontSize(14);pdf.text('DATOS DEL SERVICIO',margen,y);y+=10;pdf.setDrawColor(103,70,220);pdf.line(margen,y,ancho-margen,y);y+=9;
 campo('Cliente:',e.cliente);campo('Telefono:',e.telefono);campo('Fecha:',textoFecha(e.fecha));
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion),horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
-campo('Horario:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin));campo('Tipo de evento:',e.tipo);campo('Duracion:',e.duracion);campo('Domicilio:',e.domicilio);campo('Precio:',e.precio?'
-
-document.querySelector('#eliminarBtn').onclick=()=>{if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
-eventos=eventos.filter(e=>e.id!==seleccionado.id);
-guardar();
-dialog.close();
-actualizar()};
-
-actualizar();
-+Number(e.precio).toLocaleString('es-MX')+' MXN':'Por confirmar');campo('Anticipo:',e.anticipo?'
-
-document.querySelector('#eliminarBtn').onclick=()=>{if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
-eventos=eventos.filter(e=>e.id!==seleccionado.id);
-guardar();
-dialog.close();
-actualizar()};
-
-actualizar();
-+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'Por confirmar');campo('Notas:',e.notas||'Sin notas');
-y+=8;pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.text(pdf.splitTextToSize('Este documento contiene los datos registrados para la reservacion del servicio de Desafios Locos. Verifica que toda la informacion sea correcta.',util),margen,y);y+=25;
-pdf.setDrawColor(120);pdf.line(margen,y,margen+65,y);pdf.line(ancho-margen-65,y,ancho-margen,y);y+=5;pdf.setFontSize(8);pdf.text('Firma del cliente',margen,y);pdf.text('Desafios Locos',ancho-margen-65,y);pdf.text('WhatsApp: 811 027 6858',margen,285);
-const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
+campo('Horario:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin));campo('Tipo de evento:',e.tipo);campo('Duracion:',e.duracion);campo('Domicilio:',e.domicilio);campo('Precio:',e.precio?'$'+Number(e.precio).toLocaleString('es-MX')+' MXN':'Por confirmar');
+campo('Anticipo:',e.anticipo?'$'+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'Por confirmar');
+campo('Notas:',e.notas||'Sin notas');
+y+=8;
+pdf.setFont('helvetica','normal');
+pdf.setFontSize(9);
+pdf.text(pdf.splitTextToSize('Este documento contiene los datos registrados para la reservacion del servicio de Desafios Locos. Verifica que toda la informacion sea correcta.',util),margen,y);
+y+=25;
+pdf.setDrawColor(120);
+pdf.line(margen,y,margen+65,y);
+pdf.line(ancho-margen-65,y,ancho-margen,y);
+y+=5;
+pdf.setFontSize(8);
+pdf.text('Firma del cliente',margen,y);
+pdf.text('Desafios Locos',ancho-margen-65,y);
+pdf.text('WhatsApp: 811 027 6858',margen,285);
+const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
 document.querySelector('#imprimirBtn').onclick=descargarContratoPDF;
 
-document.querySelector('#eliminarBtn').onclick=()=>{if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
-eventos=eventos.filter(e=>e.id!==seleccionado.id);
-guardar();
-dialog.close();
-actualizar()};
+document.querySelector('#eliminarBtn').onclick=()=>{
+  if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
+  eventos=eventos.filter(e=>e.id!==seleccionado.id);
+  guardar();
+  dialog.close();
+  actualizar();
+};
 
 actualizar();
