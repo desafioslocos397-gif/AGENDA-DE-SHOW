@@ -17,7 +17,7 @@ actualizarLogotipo()
 const configDialog=document.querySelector('#configDialog');
 document.querySelector('#configurarContratoBtn').addEventListener('click',()=>{prepararFormularioConfig();document.querySelector('#configMsg').textContent='';configDialog.showModal()});
 document.querySelector('#cerrarConfig').addEventListener('click',()=>configDialog.close());
-document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...config,...CONFIG_DEFAULTS,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
+document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...CONFIG_DEFAULTS,...config,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
 document.querySelector('#restaurarConfig').addEventListener('click',()=>{if(!confirm('¿Restaurar los datos iniciales del contrato?'))return;config={...CONFIG_DEFAULTS};guardarConfig();logoInput.value='';prepararFormularioConfig();document.querySelector('#configMsg').textContent='Se restauraron los datos iniciales.'});
 
 const horarios=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
