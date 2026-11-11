@@ -5,3 +5,7 @@
 @media print{body{background:#fff}.topbar,.wrap,.dialog-actions,.close{display:none!important}dialog{display:block!important;position:static;box-shadow:none;width:100%;max-width:none;padding:0}dialog::backdrop{display:none}.dialog-head{border-bottom:2px solid #222;padding-bottom:14px}.detail{background:#fff;border:1px solid #ddd}.eyebrow{color:#333}}
 
 .top-actions{display:flex;align-items:center;gap:18px}.top-actions .btn{white-space:nowrap}.config-help{font-size:12px;line-height:1.5;color:var(--muted);background:#f8f7fb;border-radius:10px;padding:12px;margin:-5px 0 18px}#configDialog{width:min(720px,calc(100% - 28px));max-height:90vh;overflow:auto}#configDialog .form-grid{gap:12px}#configDialog textarea{min-height:90px}@media(max-width:560px){.top-actions{gap:8px}.top-actions .btn{font-size:10px;padding:9px 10px}.top-actions .status{display:none}}
+
+/* Selector de horario: mejorar respuesta táctil en Android */
+#eventoForm select[name="hora"]{display:block;width:100%;min-height:48px;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation;-webkit-appearance:menulist;appearance:auto;background-color:#fff;}
+@media(max-width:560px){#eventoForm label:has(select[name="hora"]){position:relative;z-index:3}#eventoForm select[name="hora"]{min-height:52px;font-size:16px;padding:12px;}}
