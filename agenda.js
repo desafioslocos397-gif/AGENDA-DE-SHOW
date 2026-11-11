@@ -118,13 +118,7 @@ window.open(url,'_blank','noopener')}
 document.querySelector('#whatsAppBtn').onclick=()=>abrirWhatsApp('528110276858');
 
 document.querySelector('#clienteWhatsAppBtn').onclick=()=>{
-if(!seleccionado)return;
-const tel=seleccionado.telefono.replace(/\D/g,'');
-const numero=tel.length===10?'52'+tel:tel;
-const url='https://wa.me/'+numero+'?text='+mensajeWhats(seleccionado);
-const ventana=window.open(url,'_blank');
 descargarContratoPDF();
-if(!ventana)alert('El contrato se descargó. Tu navegador bloqueó la ventana de WhatsApp; permite las ventanas emergentes e inténtalo de nuevo.');
 };
 
 function descargarContratoPDF(){
