@@ -1,4 +1,20 @@
 const STORAGE_KEY='desafiosLocosAgendaV1';
+const CONFIG_KEY='agendaShowConfigV1';
+const CONFIG_DEFAULTS={
+showName:'DESAFÍOS LOCOS',representative:'DANIEL LEON',whatsapp:'811 027 6858',
+tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',
+includes:'1 HORA DE SHOW 100% DINÁMICO\\nANIMACIÓN CÓMICA\\nPREMIOS PARA CONCURSANTES\\nDESAFÍOS Y CONCURSOS\\nLLUVIA DE BURBUJAS\\nPELOTAS GIGANTES\\nCARNAVAL Y BANDERINES\\nPARTICIPACIÓN EN EL PASTEL\\nEQUIPO DE SONIDO',
+clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\\n3. En caso de cancelar su evento, su anticipo no será devuelto.\\n4. Firme si usted está de acuerdo.\\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
+};
+function leerConfig(){try{return {...CONFIG_DEFAULTS,...JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}')}}catch{return {...CONFIG_DEFAULTS}}}
+let config=leerConfig();
+function guardarConfig(){localStorage.setItem(CONFIG_KEY,JSON.stringify(config))}
+function prepararFormularioConfig(){const f=document.querySelector('#configForm');Object.keys(config).forEach(k=>{if(f.elements[k])f.elements[k].value=config[k]??''})}
+const configDialog=document.querySelector('#configDialog');
+document.querySelector('#configurarContratoBtn').addEventListener('click',()=>{prepararFormularioConfig();document.querySelector('#configMsg').textContent='';configDialog.showModal()});
+document.querySelector('#cerrarConfig').addEventListener('click',()=>configDialog.close());
+document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...CONFIG_DEFAULTS,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
+document.querySelector('#restaurarConfig').addEventListener('click',()=>{if(!confirm('¿Restaurar los datos iniciales del contrato?'))return;config={...CONFIG_DEFAULTS};guardarConfig();prepararFormularioConfig();document.querySelector('#configMsg').textContent='Se restauraron los datos iniciales.'});
 
 const horarios=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
 
@@ -110,12 +126,12 @@ llenarHorarios();
 };
 
 
-function mensajeWhats(e){return 'Hola, te comparto los datos de la reservación de Desafíos Locos:%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0')))+'%0AEvento: '+encodeURIComponent(e.tipo)+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0APrecio: '+encodeURIComponent(e.precio||'Por confirmar')+'%0AAnticipo: '+encodeURIComponent(e.anticipo||'Por confirmar')+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
+function mensajeWhats(e){return 'Hola, te comparto los datos de la reservación de '+encodeURIComponent(config.showName)+':%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0')))+'%0AEvento: '+encodeURIComponent(e.tipo)+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0APrecio: '+encodeURIComponent(e.precio||'Por confirmar')+'%0AAnticipo: '+encodeURIComponent(e.anticipo||'Por confirmar')+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
 function abrirWhatsApp(numero){if(!seleccionado)return;
 const tel=numero.replace(/\D/g,'');
 const url='https://wa.me/'+tel+'?text='+mensajeWhats(seleccionado);
 window.open(url,'_blank','noopener')}
-document.querySelector('#whatsAppBtn').onclick=()=>abrirWhatsApp('528110276858');
+document.querySelector('#whatsAppBtn').onclick=()=>abrirWhatsApp(config.whatsapp);
 
 document.querySelector('#clienteWhatsAppBtn').onclick=()=>{
 descargarContratoPDF();
@@ -137,14 +153,14 @@ const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).p
 const mitad=(util-12)/2;
 // Encabezado amplio
 pdf.setFillColor(35,28,65);pdf.roundedRect(margen,y,util,29,2.5,2.5,'F');
-pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);pdf.text('DESAFÍOS LOCOS',margen+7,y+11);
+pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);pdf.text(String(config.showName||'SHOW').toUpperCase(),margen+7,y+11);
 pdf.setFontSize(11);pdf.text('CONTRATO DE SERVICIO DE SHOW',margen+7,y+19);
 pdf.setFont('helvetica','normal');pdf.setFontSize(8);
-pdf.text('TikTok: @desafiolocosmtv  |  Facebook: Desafios locos mtv  |  YouTube: @DESAFIOSLOCOS',margen+7,y+25);
+pdf.text(('TikTok: '+(config.tiktok||'')+'  |  Facebook: '+(config.facebook||'')+'  |  YouTube: '+(config.youtube||'')).slice(0,115),margen+7,y+25);
 y+=35;
-texto('Instagram: desafioslocosmtv',margen,y,8.5);
+if(config.instagram)texto('Instagram: '+config.instagram,margen,y,8.5);
 y+=5;
-texto('WhatsApp: 811 027 6858',margen,y,9,true);
+texto('WhatsApp: '+(config.whatsapp||'No especificado'),margen,y,9,true);
 y+=8;
 // Datos del evento
 seccion('Datos del evento');
@@ -163,20 +179,13 @@ y=Math.max(y1,y2)+4;
 texto('LUGAR DEL EVENTO:',margen,y,8.2,true);y+=5;pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const direccionLines=pdf.splitTextToSize(String(e.domicilio||'No especificado'),util-4);pdf.text(direccionLines,margen+2,y);y+=Math.max(6,direccionLines.length*4.2)+2;
 // Qué incluye
 seccion('Qué incluye nuestro show');
-const incluye=['1 HORA DE SHOW 100% DINÁMICO','ANIMACIÓN CÓMICA','PREMIOS PARA CONCURSANTES','DESAFÍOS Y CONCURSOS','LLUVIA DE BURBUJAS','PELOTAS GIGANTES','CARNAVAL Y BANDERINES','PARTICIPACIÓN EN EL PASTEL','EQUIPO DE SONIDO'];
+const incluye=String(config.includes||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
 const colW=util/3;
 incluye.forEach((item,i)=>{const col=i%3,fila=Math.floor(i/3);texto('• '+item,margen+col*colW,y+fila*7,7.6,true)});
 y+=Math.ceil(incluye.length/3)*7+3;
 // Términos
 seccion('Términos y condiciones');
-const clausulas=[
-'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.',
-'2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.',
-'3. En caso de cancelar su evento, su anticipo no será devuelto.',
-'4. Firme si usted está de acuerdo.',
-'5. No se pueden entregar alimentos durante el show ni dulces, etc.',
-'6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
-];
+const clausulas=String(config.clauses||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
 clausulas.forEach(parrafo);
 // Costos en tres columnas amplias
 seccion('Costos');
@@ -195,8 +204,8 @@ pdf.text(nombreCliente,margen+28,firmaY);
 const xRep=margen+util/2+6;
 pdf.line(xRep,firmaY-2,xRep+mitad-8,firmaY-2);
 texto('FIRMA DEL REPRESENTANTE',xRep,firmaY+5,7.5,true);
-texto('DANIEL LEON',xRep,firmaY+10,9,true);
-texto('Desafíos Locos  ·  WhatsApp: 811 027 6858',margen,altoPagina-9,7.5);
+texto(config.representative||'REPRESENTANTE',xRep,firmaY+10,9,true);
+texto((config.showName||'SHOW')+'  ·  WhatsApp: '+(config.whatsapp||''),margen,altoPagina-9,7.5);
 const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
