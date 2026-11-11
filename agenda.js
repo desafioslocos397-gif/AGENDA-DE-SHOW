@@ -131,7 +131,7 @@ y1=y;y2=y;
 y1+=campo('HORARIO:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin),margen,y1,mitad);
 y2+=campo('FESTEJADO:',e.festejado||'No especificado',margen+mitad+12,y2,mitad);
 y=Math.max(y1,y2)+4;
-y+=campo('LUGAR DEL EVENTO:',e.domicilio,margen,y,util)+2;
+texto('LUGAR DEL EVENTO:',margen,y,8.2,true);y+=5;pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const direccionLines=pdf.splitTextToSize(String(e.domicilio||'No especificado'),util-4);pdf.text(direccionLines,margen+2,y);y+=Math.max(6,direccionLines.length*4.2)+2;
 // Qué incluye
 seccion('Qué incluye nuestro show');
 const incluye=['1 HORA DE SHOW 100% DINÁMICO','ANIMACIÓN CÓMICA','PREMIOS PARA CONCURSANTES','DESAFÍOS Y CONCURSOS','LLUVIA DE BURBUJAS','PELOTAS GIGANTES','CARNAVAL Y BANDERINES','PARTICIPACIÓN EN EL PASTEL','EQUIPO DE SONIDO'];
