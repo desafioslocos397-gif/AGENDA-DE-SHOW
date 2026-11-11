@@ -3,8 +3,8 @@ const CONFIG_KEY='agendaShowConfigV1';
 const CONFIG_DEFAULTS={
 showName:'DESAFÍOS LOCOS',representative:'DANIEL LEON',whatsapp:'811 027 6858',
 tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',
-includes:'1 HORA DE SHOW 100% DINÁMICO\\nANIMACIÓN CÓMICA\\nPREMIOS PARA CONCURSANTES\\nDESAFÍOS Y CONCURSOS\\nLLUVIA DE BURBUJAS\\nPELOTAS GIGANTES\\nCARNAVAL Y BANDERINES\\nPARTICIPACIÓN EN EL PASTEL\\nEQUIPO DE SONIDO',
-clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\\n3. En caso de cancelar su evento, su anticipo no será devuelto.\\n4. Firme si usted está de acuerdo.\\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
+includes:'1 HORA DE SHOW 100% DINÁMICO\nANIMACIÓN CÓMICA\nPREMIOS PARA CONCURSANTES\nDESAFÍOS Y CONCURSOS\nLLUVIA DE BURBUJAS\nPELOTAS GIGANTES\nCARNAVAL Y BANDERINES\nPARTICIPACIÓN EN EL PASTEL\nEQUIPO DE SONIDO',
+clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\n3. En caso de cancelar su evento, su anticipo no será devuelto.\n4. Firme si usted está de acuerdo.\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
 };
 function leerConfig(){try{return {...CONFIG_DEFAULTS,...JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}')}}catch{return {...CONFIG_DEFAULTS}}}
 let config=leerConfig();
@@ -179,13 +179,13 @@ y=Math.max(y1,y2)+4;
 texto('LUGAR DEL EVENTO:',margen,y,8.2,true);y+=5;pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const direccionLines=pdf.splitTextToSize(String(e.domicilio||'No especificado'),util-4);pdf.text(direccionLines,margen+2,y);y+=Math.max(6,direccionLines.length*4.2)+2;
 // Qué incluye
 seccion('Qué incluye nuestro show');
-const incluye=String(config.includes||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
+const incluye=String(config.includes||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
 const colW=util/3;
 incluye.forEach((item,i)=>{const col=i%3,fila=Math.floor(i/3);texto('• '+item,margen+col*colW,y+fila*7,7.6,true)});
 y+=Math.ceil(incluye.length/3)*7+3;
 // Términos
 seccion('Términos y condiciones');
-const clausulas=String(config.clauses||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
+const clausulas=String(config.clauses||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
 clausulas.forEach(parrafo);
 // Costos en tres columnas amplias
 seccion('Costos');
