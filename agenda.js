@@ -56,7 +56,7 @@ document.querySelector('#filtroFecha').addEventListener('change',renderLista);
 form.addEventListener('submit',ev=>{ev.preventDefault();
 const data=Object.fromEntries(new FormData(form).entries());
 const inicioNuevo=minutosHora(data.hora),finNuevo=inicioNuevo+duracionMinutos(data.duracion);
-if(eventos.some(e=>{if(e.fecha!==data.fecha)return false;const inicioExistente=minutosHora(e.hora),finExistente=inicioExistente+duracionMinutos(e.duracion);return seCruzan(inicioNuevo,finNuevo,inicioExistente,finExistente)})){document.querySelector('#formMsg').textContent='Ese horario se cruza con otra reservación. Elige otro.';return}if(editandoId){
+if(eventos.some(e=>{if(e.id===editandoId||e.fecha!==data.fecha)return false;const inicioExistente=minutosHora(e.hora),finExistente=inicioExistente+duracionMinutos(e.duracion);return seCruzan(inicioNuevo,finNuevo,inicioExistente,finExistente)})){document.querySelector('#formMsg').textContent='Ese horario se cruza con otra reservación. Elige otro.';return}if(editandoId){
 const indice=eventos.findIndex(e=>e.id===editandoId);
 if(indice>=0){data.id=editandoId;eventos[indice]=data;}
 editandoId=null;
