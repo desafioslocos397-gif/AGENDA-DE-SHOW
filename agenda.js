@@ -1,7 +1,7 @@
 const STORAGE_KEY='desafiosLocosAgendaV1';
 const CONFIG_KEY='agendaShowConfigV1';
 const CONFIG_DEFAULTS={
-showName:'DESAFÍOS LOCOS',logoData:'',representative:'DANIEL LEON',whatsapp:'811 027 6858',
+showName:'DESAFÍOS LOCOS',logoData:'',pdfBackgroundColor:'#ffffff',pdfBackgroundData:'',representative:'DANIEL LEON',whatsapp:'811 027 6858',
 tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',
 includes:'1 HORA DE SHOW 100% DINÁMICO\nANIMACIÓN CÓMICA\nPREMIOS PARA CONCURSANTES\nDESAFÍOS Y CONCURSOS\nLLUVIA DE BURBUJAS\nPELOTAS GIGANTES\nCARNAVAL Y BANDERINES\nPARTICIPACIÓN EN EL PASTEL\nEQUIPO DE SONIDO',
 clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\n3. En caso de cancelar su evento, su anticipo no será devuelto.\n4. Firme si usted está de acuerdo.\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
@@ -11,6 +11,11 @@ let config=leerConfig();
 function guardarConfig(){localStorage.setItem(CONFIG_KEY,JSON.stringify(config))}
 function actualizarLogotipo(){const logo=document.querySelector('#brandLogo'),marca=document.querySelector('#brandMark'),preview=document.querySelector('#logoPreview');if(config.logoData){logo.src=config.logoData;logo.hidden=false;marca.hidden=true;preview.src=config.logoData;preview.hidden=false}else{logo.hidden=true;logo.removeAttribute('src');marca.hidden=false;preview.hidden=true;preview.removeAttribute('src')}}
 function prepararFormularioConfig(){const f=document.querySelector('#configForm');Object.keys(config).forEach(k=>{if(f.elements[k]&&f.elements[k].type!=='file')f.elements[k].value=config[k]??''});actualizarLogotipo()}
+const fondoInput=document.querySelector('#pdfBackgroundInput');
+const fondoPreview=document.querySelector('#pdfBackgroundPreview');
+function actualizarVistaFondo(){if(config.pdfBackgroundData){fondoPreview.src=config.pdfBackgroundData;fondoPreview.hidden=false}else{fondoPreview.hidden=true;fondoPreview.removeAttribute('src')}}
+fondoInput.addEventListener('change',()=>{const archivo=fondoInput.files&&fondoInput.files[0];if(!archivo)return;if(!archivo.type.startsWith('image/')){alert('Selecciona una imagen válida.');fondoInput.value='';return}const lector=new FileReader();lector.onload=()=>{const imagen=new Image();imagen.onload=()=>{const escala=Math.min(1,1200/Math.max(imagen.width,imagen.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(imagen.width*escala));canvas.height=Math.max(1,Math.round(imagen.height*escala));const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.globalAlpha=0.20;ctx.drawImage(imagen,0,0,canvas.width,canvas.height);ctx.globalAlpha=1;config.pdfBackgroundData=canvas.toDataURL('image/jpeg',0.82);try{guardarConfig();actualizarVistaFondo();document.querySelector('#configMsg').textContent='Fondo guardado. Aparecerá suavemente detrás del texto del contrato PDF.'}catch(err){config.pdfBackgroundData='';alert('La imagen es demasiado grande. Prueba con otra más pequeña.')}};imagen.onerror=()=>alert('No se pudo abrir esa imagen.');imagen.src=lector.result};lector.readAsDataURL(archivo)});
+document.querySelector('#quitarFondoBtn').addEventListener('click',()=>{config.pdfBackgroundData='';fondoInput.value='';guardarConfig();actualizarVistaFondo();document.querySelector('#configMsg').textContent='Se quitó la imagen de fondo.'});
 const logoInput=document.querySelector('#logoInput');
 logoInput.addEventListener('change',()=>{const archivo=logoInput.files&&logoInput.files[0];if(!archivo)return;if(!archivo.type.startsWith('image/')){alert('Selecciona una imagen válida.');logoInput.value='';return}const lector=new FileReader();lector.onload=()=>{const imagen=new Image();imagen.onload=()=>{const escala=Math.min(1,600/Math.max(imagen.width,imagen.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(imagen.width*escala));canvas.height=Math.max(1,Math.round(imagen.height*escala));canvas.getContext('2d').drawImage(imagen,0,0,canvas.width,canvas.height);config.logoData=canvas.toDataURL('image/jpeg',0.86);try{guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Logotipo guardado. También aparecerá en el contrato PDF.'}catch(err){config.logoData='';alert('La imagen es demasiado grande para guardarla. Prueba con otra más pequeña.')}};imagen.onerror=()=>alert('No se pudo abrir esa imagen.');imagen.src=lector.result};lector.readAsDataURL(archivo)});
 actualizarLogotipo()
@@ -152,6 +157,10 @@ if(!seleccionado)return;
 if(!window.jspdf||!window.jspdf.jsPDF){alert('No se pudo cargar el generador de PDF. Revisa tu conexión a internet e inténtalo de nuevo.');return}
 const e=seleccionado,{jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'letter'});
 const ancho=pdf.internal.pageSize.getWidth(),altoPagina=pdf.internal.pageSize.getHeight(),margen=16,util=ancho-margen*2;
+// Fondo personalizable de la hoja del contrato
+const hex=String(config.pdfBackgroundColor||'#ffffff').replace('#','');
+if(/^[0-9a-fA-F]{6}$/.test(hex)){pdf.setFillColor(parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16));pdf.rect(0,0,ancho,altoPagina,'F')}
+if(config.pdfBackgroundData){try{pdf.addImage(config.pdfBackgroundData,'JPEG',0,0,ancho,altoPagina,'fondoContrato','FAST')}catch(err){console.warn('No se pudo insertar el fondo del contrato',err)}}
 let y=14;
 const color=[45,40,65],morado=[103,70,220];
 const texto=(s,x,yy,tam=8.5,negrita=false)=>{pdf.setFont('helvetica',negrita?'bold':'normal');pdf.setFontSize(tam);pdf.setTextColor(...color);pdf.text(String(s||'No especificado'),x,yy)};
