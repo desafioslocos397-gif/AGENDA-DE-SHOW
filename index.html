@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#17132d">
+  <title>Agenda de Shows | Desafíos Locos</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">DL</span><div><strong>AGENDA DE SHOWS</strong><small>DESAFÍOS LOCOS · PAYASO PISTOLYN</small></div></div>
+    <span class="status"><i></i> Agenda local</span>
+  </header>
+  <main class="wrap">
+    <section class="intro"><div><p class="eyebrow">ORGANIZA TUS EVENTOS</p><h1>Tu agenda, bajo control.</h1><p>Registra eventos, revisa horarios y prepara el mensaje para WhatsApp.</p></div><div class="intro-icon">🎪</div></section>
+    <section class="stats">
+      <article><span>Eventos registrados</span><b id="totalEventos">0</b></article>
+      <article><span>Eventos de este mes</span><b id="eventosMes">0</b></article>
+      <article><span>Próximo evento</span><b id="proximoEvento">—</b></article>
+    </section>
+    <div class="columns">
+      <section class="panel">
+        <div class="panel-head"><div><p class="eyebrow">NUEVA RESERVACIÓN</p><h2>Datos del evento</h2></div><span class="tag">1 · Registro</span></div>
+        <form id="eventoForm">
+          <div class="form-grid">
+            <label>Nombre del cliente<input name="cliente" required placeholder="Nombre completo"></label>
+            <label>Teléfono / WhatsApp<input name="telefono" required inputmode="tel" placeholder="10 dígitos"></label>
+            <label>Fecha del evento<input name="fecha" type="date" required></label>
+            <label>Horario<select name="hora" required><option value="">Selecciona horario</option></select></label>
+            <label>Tipo de evento<select name="tipo" required><option value="">Selecciona</option><option>Cumpleaños infantil</option><option>Cumpleaños juvenil</option><option>Baby shower</option><option>Escuela / Colegio</option><option>Evento empresarial</option><option>Posada</option><option>Otro</option></select></label>
+            <label>Duración<select name="duracion"><option>1 hora</option><option>1 hora y 30 minutos</option><option>2 horas</option><option>Personalizada</option></select></label>
+            <label class="full">Domicilio del evento<input name="domicilio" required placeholder="Calle, número, colonia y municipio"></label>
+            <label>Precio acordado (MXN)<input name="precio" type="number" min="0" step="50" placeholder="Ej. 2500"></label>
+            <label>Anticipo (MXN)<input name="anticipo" type="number" min="0" step="50" placeholder="Ej. 300"></label>
+            <label class="full">Notas adicionales<textarea name="notas" rows="3" placeholder="Indicaciones, referencias, detalles..."></textarea></label>
+          </div>
+          <div class="form-actions"><button class="btn primary" type="submit">＋ Guardar evento</button><button class="btn secondary" type="reset">Limpiar</button></div>
+          <p id="formMsg" class="message" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="panel side-panel">
+        <div class="panel-head"><div><p class="eyebrow">CONTROL DE FECHAS</p><h2>Agenda registrada</h2></div><span class="tag">2 · Consulta</span></div>
+        <label class="filter-label">Buscar por fecha<input type="date" id="filtroFecha"></label>
+        <div id="listaEventos" class="event-list"><div class="empty">Todavía no hay eventos. Registra el primero.</div></div>
+      </section>
+    </div>
+    <footer>Desafíos Locos · Agenda de uso privado</footer>
+  </main>
+  <dialog id="detalleDialog">
+    <div class="dialog-head"><div><p class="eyebrow">RESERVACIÓN</p><h2>Detalle del evento</h2></div><button class="close" id="cerrarDialog" aria-label="Cerrar">×</button></div>
+    <div id="detalleContenido"></div>
+    <div class="dialog-actions"><button class="btn primary" id="whatsAppBtn">Enviar por WhatsApp</button><button class="btn secondary" id="imprimirBtn">Imprimir contrato</button><button class="btn danger" id="eliminarBtn">Eliminar evento</button></div>
+  </dialog>
+  <script src="agenda.js"></script>
+</body>
+</html>
