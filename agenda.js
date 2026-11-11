@@ -83,9 +83,15 @@ const url='https://wa.me/'+tel+'?text='+mensajeWhats(seleccionado);
 window.open(url,'_blank','noopener')}
 document.querySelector('#whatsAppBtn').onclick=()=>abrirWhatsApp('528110276858');
 
-document.querySelector('#clienteWhatsAppBtn').onclick=()=>{if(!seleccionado)return;
+document.querySelector('#clienteWhatsAppBtn').onclick=()=>{
+if(!seleccionado)return;
 const tel=seleccionado.telefono.replace(/\D/g,'');
-abrirWhatsApp(tel.length===10?'52'+tel:tel)};
+const numero=tel.length===10?'52'+tel:tel;
+const url='https://wa.me/'+numero+'?text='+mensajeWhats(seleccionado);
+const ventana=window.open(url,'_blank');
+descargarContratoPDF();
+if(!ventana)alert('El contrato se descargó. Tu navegador bloqueó la ventana de WhatsApp; permite las ventanas emergentes e inténtalo de nuevo.');
+};
 
 function descargarContratoPDF(){
 if(!seleccionado)return;
@@ -116,7 +122,6 @@ pdf.text('WhatsApp: 811 027 6858',margen,285);
 const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
-document.querySelector('#imprimirBtn').onclick=descargarContratoPDF;
 
 document.querySelector('#eliminarBtn').onclick=()=>{
   if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
