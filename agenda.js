@@ -69,7 +69,7 @@ document.querySelector('#formMsg').textContent='¡Evento guardado correctamente!
 function abrirDetalle(id){seleccionado=eventos.find(e=>e.id===id);
 if(!seleccionado)return;
 const e=seleccionado;
-const campos=[['Cliente',e.cliente],['Teléfono',e.telefono],['Fecha',textoFecha(e.fecha)],['Horario',horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0'))],['Tipo',e.tipo],['Duración',e.duracion],['Domicilio',e.domicilio],['Precio',e.precio?'$'+Number(e.precio).toLocaleString('es-MX')+' MXN':'No especificado'],['Anticipo',e.anticipo?'$'+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'No especificado'],['Notas',e.notas||'Sin notas']];
+const campos=[['Cliente',e.cliente],['Festejado(a)',e.festejado||'No especificado'],['Municipio',e.municipio||'No especificado'],['Teléfono',e.telefono],['Fecha',textoFecha(e.fecha)],['Horario',horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0'))],['Tipo',e.tipo],['Duración',e.duracion],['Domicilio',e.domicilio],['Precio',e.precio?'$'+Number(e.precio).toLocaleString('es-MX')+' MXN':'No especificado'],['Anticipo',e.anticipo?'$'+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'No especificado'],['Notas',e.notas||'Sin notas']];
 const cont=document.querySelector('#detalleContenido');
 cont.innerHTML='<div class="detail-grid">'+campos.map(([k,v])=>'<div class="detail '+(k==='Domicilio'||k==='Notas'?'wide':'')+'"><small>'+k+'</small><b></b></div>').join('')+'</div>';
 cont.querySelectorAll('.detail b').forEach((b,i)=>b.textContent=campos[i][1]);
@@ -97,29 +97,83 @@ function descargarContratoPDF(){
 if(!seleccionado)return;
 if(!window.jspdf||!window.jspdf.jsPDF){alert('No se pudo cargar el generador de PDF. Revisa tu conexión a internet e inténtalo de nuevo.');return}
 const e=seleccionado,{jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4'});
-const ancho=pdf.internal.pageSize.getWidth(),margen=18,util=ancho-margen*2;let y=20;
-const campo=(etiqueta,valor)=>{pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text(etiqueta,margen,y);pdf.setFont('helvetica','normal');const lineas=pdf.splitTextToSize(String(valor||'No especificado'),util-38);pdf.text(lineas,margen+38,y);y+=Math.max(8,lineas.length*5+3)};
-pdf.setFillColor(35,28,65);pdf.rect(0,0,ancho,38,'F');pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);pdf.text('DESAFIOS LOCOS',margen,17);pdf.setFontSize(11);pdf.text('PAYASO PISTOLYN',margen,25);pdf.setFontSize(9);pdf.text('CONTRATO / COMPROBANTE DE RESERVACION',margen,32);
-pdf.setTextColor(35,29,55);y=51;pdf.setFont('helvetica','bold');pdf.setFontSize(14);pdf.text('DATOS DEL SERVICIO',margen,y);y+=10;pdf.setDrawColor(103,70,220);pdf.line(margen,y,ancho-margen,y);y+=9;
-campo('Cliente:',e.cliente);campo('Telefono:',e.telefono);campo('Fecha:',textoFecha(e.fecha));
-const fin=minutosHora(e.hora)+duracionMinutos(e.duracion),horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
-campo('Horario:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin));campo('Tipo de evento:',e.tipo);campo('Duracion:',e.duracion);campo('Domicilio:',e.domicilio);campo('Precio:',e.precio?'$'+Number(e.precio).toLocaleString('es-MX')+' MXN':'Por confirmar');
-campo('Anticipo:',e.anticipo?'$'+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'Por confirmar');
-campo('Notas:',e.notas||'Sin notas');
-y+=8;
-pdf.setFont('helvetica','normal');
-pdf.setFontSize(9);
-pdf.text(pdf.splitTextToSize('Este documento contiene los datos registrados para la reservacion del servicio de Desafios Locos. Verifica que toda la informacion sea correcta.',util),margen,y);
-y+=25;
-pdf.setDrawColor(120);
-pdf.line(margen,y,margen+65,y);
-pdf.line(ancho-margen-65,y,ancho-margen,y);
-y+=5;
-pdf.setFontSize(8);
-pdf.text('Firma del cliente',margen,y);
-pdf.text('Desafios Locos',ancho-margen-65,y);
-pdf.text('WhatsApp: 811 027 6858',margen,285);
-const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+const ancho=pdf.internal.pageSize.getWidth(),margen=18,util=ancho-margen*2;
+let y=20;
+const nuevaPagina=()=>{pdf.addPage();y=20};
+const espacio=(alto=8)=>{if(y+alto>275)nuevaPagina()};
+const tituloSeccion=(titulo)=>{
+  espacio(18);
+  pdf.setFont('helvetica','bold');pdf.setFontSize(12);pdf.setTextColor(103,70,220);
+  pdf.text(titulo,margen,y);y+=4;pdf.setDrawColor(190,180,235);pdf.line(margen,y,ancho-margen,y);y+=7;
+};
+const campo=(etiqueta,valor)=>{
+  const texto=String(valor||'No especificado');
+  pdf.setFont('helvetica','bold');pdf.setFontSize(9);
+  const lineas=pdf.splitTextToSize(texto,util-38);
+  const alto=Math.max(7,lineas.length*4.5+2);espacio(alto);
+  pdf.setTextColor(45,40,65);pdf.text(etiqueta,margen,y);
+  pdf.setFont('helvetica','normal');pdf.setTextColor(35,31,48);
+  pdf.text(lineas,margen+38,y);y+=alto;
+};
+const parrafo=(texto)=>{
+  pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+  const lineas=pdf.splitTextToSize(texto,util);
+  const alto=lineas.length*4.5+3;espacio(alto);
+  pdf.setTextColor(45,40,65);pdf.text(lineas,margen,y);y+=alto;
+};
+const encabezado=()=>{
+  pdf.setFillColor(35,28,65);pdf.rect(0,0,ancho,38,'F');
+  pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');
+  pdf.setFontSize(20);pdf.text('DESAFIOS LOCOS',margen,15);
+  pdf.setFontSize(11);pdf.text('CONTRATO DE SERVICIO DE SHOW',margen,23);
+  pdf.setFont('helvetica','normal');pdf.setFontSize(8);
+  pdf.text('TikTok: @desafiolocosmtv  |  Facebook: Desafios locos mtv',margen,30);
+  pdf.text('YouTube: @DESAFIOSLOCOS  |  Instagram: desafioslocosmtv  |  WhatsApp: 811 027 6858',margen,35);
+};
+encabezado();y=49;
+tituloSeccion('DATOS DEL EVENTO');
+const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
+const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
+campo('MUNICIPIO:',e.municipio||'No especificado');
+campo('FECHA:',textoFecha(e.fecha));
+campo('NOMBRE:',e.cliente);
+campo('TELÉFONO:',e.telefono);
+campo('HORARIO:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin));
+campo('LUGAR DEL EVENTO:',e.domicilio);
+campo('FESTEJADO(A):',e.festejado||'No especificado');
+tituloSeccion('QUÉ INCLUYE NUESTRO SHOW');
+[
+'1 HORA DE SHOW 100% DINÁMICO',
+'ANIMACIÓN CÓMICA',
+'PREMIOS PARA CONCURSANTES',
+'DESAFÍOS Y CONCURSOS',
+'LLUVIA DE BURBUJAS',
+'PELOTAS GIGANTES',
+'CARNAVAL Y BANDERINES',
+'PARTICIPACIÓN EN EL PASTEL',
+'EQUIPO DE SONIDO'
+].forEach(item=>{espacio(7);pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(35,31,48);pdf.text('•  '+item,margen,y);y+=6});
+tituloSeccion('TÉRMINOS Y CONDICIONES');
+[
+'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.',
+'2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.',
+'3. En caso de cancelar su evento, su anticipo no será devuelto.',
+'4. Firme si usted está de acuerdo.',
+'5. No se pueden entregar alimentos durante el show ni dulces, etc.',
+'6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
+].forEach((item)=>parrafo(item));
+tituloSeccion('COSTOS');
+const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=total-anticipo;
+campo('COSTO TOTAL:',total?'$'+total.toLocaleString('es-MX')+' PESOS':'Por confirmar');
+campo('ANTICIPO:',anticipo?'$'+anticipo.toLocaleString('es-MX')+' PESOS':'Por confirmar');
+campo('RESTA:',total?'$'+resta.toLocaleString('es-MX')+' PESOS':'Por confirmar');
+tituloSeccion('FIRMAS');
+espacio(28);
+pdf.setDrawColor(90);pdf.line(margen,y+10,margen+75,y+10);pdf.line(ancho-margen-75,y+10,ancho-margen,y+10);
+pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(35,31,48);
+pdf.text('CONTRATANTE',margen,y+16);pdf.setFont('helvetica','bold');pdf.text('REPRESENTANTE: DANIEL LEON',ancho-margen-75,y+16);
+pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.text('Desafíos Locos · WhatsApp: 811 027 6858',margen,287);
+const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
 
