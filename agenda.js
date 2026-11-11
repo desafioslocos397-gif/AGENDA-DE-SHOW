@@ -130,7 +130,13 @@ const encabezado=()=>{
   pdf.text('TikTok: @desafiolocosmtv  |  Facebook: Desafios locos mtv',margen,30);
   pdf.text('YouTube: @DESAFIOSLOCOS  |  Instagram: desafioslocosmtv  |  WhatsApp: 811 027 6858',margen,35);
 };
-encabezado();y=49;
+encabezado();y=47;
+tituloSeccion('REDES SOCIALES Y CONTACTO');
+parrafo('TikTok: @desafiolocosmtv');
+parrafo('Facebook: Desafios locos mtv');
+parrafo('YouTube: @DESAFIOSLOCOS');
+parrafo('Instagram: desafioslocosmtv');
+parrafo('WhatsApp: 811 027 6858');
 tituloSeccion('DATOS DEL EVENTO');
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
 const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
