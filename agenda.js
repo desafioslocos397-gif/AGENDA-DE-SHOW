@@ -173,16 +173,16 @@ const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=total-antic
 campo('COSTO TOTAL:',total?'$'+total.toLocaleString('es-MX')+' PESOS':'Por confirmar');
 campo('ANTICIPO:',anticipo?'$'+anticipo.toLocaleString('es-MX')+' PESOS':'Por confirmar');
 campo('RESTA:',total?'$'+resta.toLocaleString('es-MX')+' PESOS':'Por confirmar');
-// Reservar espacio suficiente para que las dos firmas nunca queden cortadas.
-if(y+48>270)nuevaPagina();
+// Colocar las firmas una debajo de otra para que ambas se lean claramente.
+if(y+65>270)nuevaPagina();
 tituloSeccion('FIRMAS');
-espacio(38);
+espacio(52);
 pdf.setDrawColor(90);pdf.setLineWidth(0.4);
-pdf.line(margen,y+12,margen+75,y+12);
-pdf.line(ancho-margen-75,y+12,ancho-margen,y+12);
+pdf.line(margen,y+10,ancho-margen,y+10);
 pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.setTextColor(35,31,48);
-pdf.text('CONTRATANTE',margen,y+19);
-pdf.setFont('helvetica','bold');pdf.text('REPRESENTANTE: DANIEL LEON',ancho-margen-75,y+19);
+pdf.text('CONTRATANTE',margen,y+16);
+pdf.line(margen,y+34,ancho-margen,y+34);
+pdf.setFont('helvetica','bold');pdf.text('REPRESENTANTE: DANIEL LEON',margen,y+40);
 pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.text('Desafíos Locos · WhatsApp: 811 027 6858',margen,287);
 const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
