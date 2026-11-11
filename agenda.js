@@ -87,7 +87,40 @@ document.querySelector('#clienteWhatsAppBtn').onclick=()=>{if(!seleccionado)retu
 const tel=seleccionado.telefono.replace(/\D/g,'');
 abrirWhatsApp(tel.length===10?'52'+tel:tel)};
 
-document.querySelector('#imprimirBtn').onclick=()=>window.print();
+function descargarContratoPDF(){
+if(!seleccionado)return;
+if(!window.jspdf||!window.jspdf.jsPDF){alert('No se pudo cargar el generador de PDF. Revisa tu conexión a internet e inténtalo de nuevo.');return}
+const e=seleccionado,{jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4'});
+const ancho=pdf.internal.pageSize.getWidth(),margen=18,util=ancho-margen*2;let y=20;
+const campo=(etiqueta,valor)=>{pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text(etiqueta,margen,y);pdf.setFont('helvetica','normal');const lineas=pdf.splitTextToSize(String(valor||'No especificado'),util-38);pdf.text(lineas,margen+38,y);y+=Math.max(8,lineas.length*5+3)};
+pdf.setFillColor(35,28,65);pdf.rect(0,0,ancho,38,'F');pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);pdf.text('DESAFIOS LOCOS',margen,17);pdf.setFontSize(11);pdf.text('PAYASO PISTOLYN',margen,25);pdf.setFontSize(9);pdf.text('CONTRATO / COMPROBANTE DE RESERVACION',margen,32);
+pdf.setTextColor(35,29,55);y=51;pdf.setFont('helvetica','bold');pdf.setFontSize(14);pdf.text('DATOS DEL SERVICIO',margen,y);y+=10;pdf.setDrawColor(103,70,220);pdf.line(margen,y,ancho-margen,y);y+=9;
+campo('Cliente:',e.cliente);campo('Telefono:',e.telefono);campo('Fecha:',textoFecha(e.fecha));
+const fin=minutosHora(e.hora)+duracionMinutos(e.duracion),horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
+campo('Horario:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin));campo('Tipo de evento:',e.tipo);campo('Duracion:',e.duracion);campo('Domicilio:',e.domicilio);campo('Precio:',e.precio?'
+
+document.querySelector('#eliminarBtn').onclick=()=>{if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
+eventos=eventos.filter(e=>e.id!==seleccionado.id);
+guardar();
+dialog.close();
+actualizar()};
+
+actualizar();
++Number(e.precio).toLocaleString('es-MX')+' MXN':'Por confirmar');campo('Anticipo:',e.anticipo?'
+
+document.querySelector('#eliminarBtn').onclick=()=>{if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
+eventos=eventos.filter(e=>e.id!==seleccionado.id);
+guardar();
+dialog.close();
+actualizar()};
+
+actualizar();
++Number(e.anticipo).toLocaleString('es-MX')+' MXN':'Por confirmar');campo('Notas:',e.notas||'Sin notas');
+y+=8;pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.text(pdf.splitTextToSize('Este documento contiene los datos registrados para la reservacion del servicio de Desafios Locos. Verifica que toda la informacion sea correcta.',util),margen,y);y+=25;
+pdf.setDrawColor(120);pdf.line(margen,y,margen+65,y);pdf.line(ancho-margen-65,y,ancho-margen,y);y+=5;pdf.setFontSize(8);pdf.text('Firma del cliente',margen,y);pdf.text('Desafios Locos',ancho-margen-65,y);pdf.text('WhatsApp: 811 027 6858',margen,285);
+const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
+}
+document.querySelector('#imprimirBtn').onclick=descargarContratoPDF;
 
 document.querySelector('#eliminarBtn').onclick=()=>{if(!seleccionado||!confirm('¿Seguro que deseas eliminar este evento?'))return;
 eventos=eventos.filter(e=>e.id!==seleccionado.id);
