@@ -37,7 +37,7 @@
             <label>Anticipo (MXN)<input name="anticipo" type="number" min="0" step="50" placeholder="Ej. 300"></label>
             <label class="full">Notas adicionales<textarea name="notas" rows="3" placeholder="Indicaciones, referencias, detalles..."></textarea></label>
           </div>
-          <div class="form-actions"><button class="btn primary" type="submit">＋ Guardar evento</button><button class="btn secondary" type="reset">Limpiar</button></div>
+          <div class="form-actions"><button class="btn primary" id="guardarEventoBtn" type="submit">＋ Guardar evento</button><button class="btn secondary" type="reset">Limpiar</button><button class="btn secondary" id="cancelarEdicionBtn" type="button" hidden>Cancelar edición</button></div>
           <p id="formMsg" class="message" aria-live="polite"></p>
         </form>
       </section>
@@ -52,7 +52,7 @@
   <dialog id="detalleDialog">
     <div class="dialog-head"><div><p class="eyebrow">RESERVACIÓN</p><h2>Detalle del evento</h2></div><button class="close" id="cerrarDialog" aria-label="Cerrar">×</button></div>
     <div id="detalleContenido"></div>
-    <div class="dialog-actions"><button class="btn primary" id="whatsAppBtn">Enviar a mi WhatsApp</button><button class="btn secondary" id="clienteWhatsAppBtn">Generar contrato y abrir WhatsApp del cliente</button><button class="btn danger" id="eliminarBtn">Eliminar evento</button></div>
+    <div class="dialog-actions"><button class="btn secondary" id="editarBtn">Editar evento</button><button class="btn primary" id="whatsAppBtn">Enviar a mi WhatsApp</button><button class="btn secondary" id="clienteWhatsAppBtn">Generar contrato y abrir WhatsApp del cliente</button><button class="btn danger" id="eliminarBtn">Eliminar evento</button></div>
   </dialog>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="agenda.js"></script>
