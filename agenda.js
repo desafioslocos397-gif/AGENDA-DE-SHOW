@@ -102,7 +102,7 @@ let y=14;
 const color=[45,40,65],morado=[103,70,220];
 const texto=(s,x,yy,tam=8.5,negrita=false)=>{pdf.setFont('helvetica',negrita?'bold':'normal');pdf.setFontSize(tam);pdf.setTextColor(...color);pdf.text(String(s||'No especificado'),x,yy)};
 const seccion=(t)=>{y+=2;pdf.setFillColor(239,236,250);pdf.roundedRect(margen,y,util,7,1.5,1.5,'F');texto(t.toUpperCase(),margen+3,y+4.8,9,true);y+=11};
-const campo=(etiqueta,valor,x,yy,w)=>{texto(etiqueta,x,yy,8.2,true);pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const lines=pdf.splitTextToSize(String(valor||'No especificado'),w-27);pdf.text(lines,x+27,yy);return Math.max(6,lines.length*4.2)};
+const campo=(etiqueta,valor,x,yy,w)=>{pdf.setFont('helvetica','bold');pdf.setFontSize(8.2);const anchoEtiqueta=pdf.getTextWidth(etiqueta)+4;texto(etiqueta,x,yy,8.2,true);pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const espacio=Math.min(anchoEtiqueta,w*0.48);const lines=pdf.splitTextToSize(String(valor||'No especificado'),Math.max(15,w-espacio));pdf.text(lines,x+espacio,yy);return Math.max(6,lines.length*4.2)};
 const parrafo=(s)=>{pdf.setFont('helvetica','normal');pdf.setFontSize(8.2);const lines=pdf.splitTextToSize(s,util-2);pdf.setTextColor(...color);pdf.text(lines,margen+1,y);y+=lines.length*4.4+2};
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
 const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
