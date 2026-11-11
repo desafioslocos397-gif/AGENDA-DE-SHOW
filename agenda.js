@@ -16,14 +16,17 @@ function leerEventos(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||
 function guardar(){localStorage.setItem(STORAGE_KEY,JSON.stringify(eventos))}
 function textoFecha(s){if(!s)return '';
 return new Date(s+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}
-function llenarHorarios(){const fecha=fechaInput.value,ocupados=eventos.filter(e=>e.fecha===fecha).map(e=>e.hora);
+function minutosHora(h){const [hh,mm]=String(h||'0:0').split(':').map(Number);return hh*60+mm}
+function duracionMinutos(valor){if(valor==='1 hora y 30 minutos')return 90;if(valor==='2 horas')return 120;return 60}
+function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);const sufijo=hh>=12?'PM':'AM';const hora=hh%12||12;return hora+':'+String(mm).padStart(2,'0')+' '+sufijo}
+function seCruzan(inicioA,finA,inicioB,finB){return inicioA<finB&&inicioB<finA}
+function llenarHorarios(){const fecha=fechaInput.value;
 horaSelect.innerHTML='<option value="">Selecciona horario</option>';
-horarios.forEach(h=>{const o=document.createElement('option');
-o.value=h;
-o.textContent=h+(ocupados.includes(h)?' · OCUPADO':'');
-o.disabled=ocupados.includes(h);
-horaSelect.append(o)})}
+horarios.forEach(h=>{const inicio=minutosHora(h),fin=inicio+duracionMinutos(form.elements.duracion.value);
+const ocupado=eventos.some(e=>{if(e.fecha!==fecha)return false;const otroInicio=minutosHora(e.hora),otroFin=otroInicio+duracionMinutos(e.duracion);return seCruzan(inicio,fin,otroInicio,otroFin)});
+const o=document.createElement('option');o.value=h;o.textContent=horaAMPM(h)+(ocupado?' · OCUPADO':'');o.disabled=ocupado;horaSelect.append(o)})}
 fechaInput.addEventListener('change',llenarHorarios);
+form.elements.duracion.addEventListener('change',llenarHorarios);
 form.elements.fecha.value=fechaLocal(hoy);
 llenarHorarios();
 
@@ -45,15 +48,15 @@ const card=document.createElement('div');
 card.className='event-card';
 card.innerHTML='<div class="date-box"><b>'+d.getDate()+'</b><small>'+d.toLocaleDateString('es-MX',{month:'short'})+'</small></div><div class="event-info"><b></b><small></small></div><span class="event-arrow">›</span>';
 card.querySelector('.event-info b').textContent=e.cliente;
-card.querySelector('.event-info small').textContent=e.hora+' · '+e.tipo;
+card.querySelector('.event-info small').textContent=horaAMPM(e.hora)+' · '+e.tipo;
 card.addEventListener('click',()=>abrirDetalle(e.id));
 lista.append(card)})}
 document.querySelector('#filtroFecha').addEventListener('change',renderLista);
 
 form.addEventListener('submit',ev=>{ev.preventDefault();
 const data=Object.fromEntries(new FormData(form).entries());
-if(eventos.some(e=>e.fecha===data.fecha&&e.hora===data.hora)){document.querySelector('#formMsg').textContent='Ese horario ya está reservado. Elige otro.';
-return}data.id=String(Date.now());
+const inicioNuevo=minutosHora(data.hora),finNuevo=inicioNuevo+duracionMinutos(data.duracion);
+if(eventos.some(e=>{if(e.fecha!==data.fecha)return false;const inicioExistente=minutosHora(e.hora),finExistente=inicioExistente+duracionMinutos(e.duracion);return seCruzan(inicioNuevo,finNuevo,inicioExistente,finExistente)})){document.querySelector('#formMsg').textContent='Ese horario se cruza con otra reservación. Elige otro.';return}data.id=String(Date.now());
 eventos.push(data);
 guardar();
 actualizar();
@@ -66,14 +69,14 @@ document.querySelector('#formMsg').textContent='¡Evento guardado correctamente!
 function abrirDetalle(id){seleccionado=eventos.find(e=>e.id===id);
 if(!seleccionado)return;
 const e=seleccionado;
-const campos=[['Cliente',e.cliente],['Teléfono',e.telefono],['Fecha',textoFecha(e.fecha)],['Horario',e.hora],['Tipo',e.tipo],['Duración',e.duracion],['Domicilio',e.domicilio],['Precio',e.precio?'$'+Number(e.precio).toLocaleString('es-MX')+' MXN':'No especificado'],['Anticipo',e.anticipo?'$'+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'No especificado'],['Notas',e.notas||'Sin notas']];
+const campos=[['Cliente',e.cliente],['Teléfono',e.telefono],['Fecha',textoFecha(e.fecha)],['Horario',horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0'))],['Tipo',e.tipo],['Duración',e.duracion],['Domicilio',e.domicilio],['Precio',e.precio?'$'+Number(e.precio).toLocaleString('es-MX')+' MXN':'No especificado'],['Anticipo',e.anticipo?'$'+Number(e.anticipo).toLocaleString('es-MX')+' MXN':'No especificado'],['Notas',e.notas||'Sin notas']];
 const cont=document.querySelector('#detalleContenido');
 cont.innerHTML='<div class="detail-grid">'+campos.map(([k,v])=>'<div class="detail '+(k==='Domicilio'||k==='Notas'?'wide':'')+'"><small>'+k+'</small><b></b></div>').join('')+'</div>';
 cont.querySelectorAll('.detail b').forEach((b,i)=>b.textContent=campos[i][1]);
 dialog.showModal()}
 document.querySelector('#cerrarDialog').onclick=()=>dialog.close();
 
-function mensajeWhats(e){return 'Hola, te comparto los datos de la reservación de Desafíos Locos:%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(e.hora)+'%0AEvento: '+encodeURIComponent(e.tipo)+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0APrecio: '+encodeURIComponent(e.precio||'Por confirmar')+'%0AAnticipo: '+encodeURIComponent(e.anticipo||'Por confirmar')+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
+function mensajeWhats(e){return 'Hola, te comparto los datos de la reservación de Desafíos Locos:%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0')))+'%0AEvento: '+encodeURIComponent(e.tipo)+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0APrecio: '+encodeURIComponent(e.precio||'Por confirmar')+'%0AAnticipo: '+encodeURIComponent(e.anticipo||'Por confirmar')+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
 function abrirWhatsApp(numero){if(!seleccionado)return;
 const tel=numero.replace(/\D/g,'');
 const url='https://wa.me/'+tel+'?text='+mensajeWhats(seleccionado);
