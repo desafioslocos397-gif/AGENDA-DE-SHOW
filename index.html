@@ -10,7 +10,7 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-mark">DL</span><div><strong>AGENDA DE SHOWS</strong><small>DESAFÍOS LOCOS · PAYASO PISTOLYN</small></div></div>
-    <span class="status"><i></i> Agenda local</span>
+    <div class="top-actions"><button class="btn secondary" id="configurarContratoBtn" type="button">⚙ Personalizar mi contrato</button><span class="status"><i></i> Agenda local</span></div>
   </header>
   <main class="wrap">
     <section class="intro"><div><p class="eyebrow">ORGANIZA TUS EVENTOS</p><h1>Tu agenda, bajo control.</h1><p>Registra eventos, revisa horarios y prepara el mensaje para WhatsApp.</p></div><div class="intro-icon">🎪</div></section>
@@ -53,6 +53,25 @@
     <div class="dialog-head"><div><p class="eyebrow">RESERVACIÓN</p><h2>Detalle del evento</h2></div><button class="close" id="cerrarDialog" aria-label="Cerrar">×</button></div>
     <div id="detalleContenido"></div>
     <div class="dialog-actions"><button class="btn secondary" id="editarBtn">Editar evento</button><button class="btn primary" id="whatsAppBtn">Enviar a mi WhatsApp</button><button class="btn secondary" id="clienteWhatsAppBtn">Descargar contrato PDF</button><button class="btn danger" id="eliminarBtn">Eliminar evento</button></div>
+  </dialog>
+  <dialog id="configDialog">
+    <div class="dialog-head"><div><p class="eyebrow">CONFIGURACIÓN PERSONAL</p><h2>Personalizar mi contrato</h2></div><button class="close" id="cerrarConfig" aria-label="Cerrar">×</button></div>
+    <p class="config-help">Estos datos se guardan únicamente en este navegador. Cada persona puede tener su propio contrato sin cambiar el de los demás.</p>
+    <form id="configForm">
+      <div class="form-grid">
+        <label>Nombre del show o negocio<input name="showName" required></label>
+        <label>Nombre del representante<input name="representative"></label>
+        <label>WhatsApp de contacto<input name="whatsapp" inputmode="tel"></label>
+        <label>TikTok<input name="tiktok"></label>
+        <label>Facebook<input name="facebook"></label>
+        <label>YouTube<input name="youtube"></label>
+        <label class="full">Instagram<input name="instagram"></label>
+        <label class="full">¿Qué incluye el show? (un punto por renglón)<textarea name="includes" rows="6"></textarea></label>
+        <label class="full">Términos y condiciones (una cláusula por renglón)<textarea name="clauses" rows="7"></textarea></label>
+      </div>
+      <div class="form-actions"><button class="btn primary" type="submit">Guardar mi contrato</button><button class="btn secondary" id="restaurarConfig" type="button">Restaurar datos iniciales</button></div>
+      <p id="configMsg" class="message" aria-live="polite"></p>
+    </form>
   </dialog>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="agenda.js"></script>
