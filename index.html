@@ -9,7 +9,7 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><span class="brand-mark">DL</span><div><strong>DESAFÍOS LOCOS</strong><small>AGENDA DE USO PRIVADO</small></div></div>
+    <div class="brand"><span class="brand-mark" id="brandMark">DL</span><img id="brandLogo" class="brand-logo" alt="Logotipo del show" hidden><div><strong>DESAFÍOS LOCOS</strong><small>AGENDA DE USO PRIVADO</small></div></div>
     <div class="top-actions"><button class="btn secondary" id="configurarContratoBtn" type="button">⚙ Personalizar mi contrato</button><span class="status"><i></i> Agenda local</span></div>
   </header>
   <main class="wrap">
@@ -67,6 +67,7 @@
         <label>Facebook<input name="facebook"></label>
         <label>YouTube<input name="youtube"></label>
         <label class="full">Instagram<input name="instagram"></label>
+        <div class="full logo-upload"><label for="logoInput">Logotipo del show (opcional)</label><input id="logoInput" type="file" accept="image/png,image/jpeg,image/webp"><small>Elige una imagen desde tu celular o computadora. Se guardará en este navegador y aparecerá también en el contrato PDF.</small><img id="logoPreview" alt="Vista previa del logotipo" hidden></div>
         <label class="full">¿Qué incluye el show? (un punto por renglón)<textarea name="includes" rows="6"></textarea></label>
         <label class="full">Términos y condiciones (una cláusula por renglón)<textarea name="clauses" rows="7"></textarea></label>
       </div>
