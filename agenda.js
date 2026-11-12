@@ -26,7 +26,7 @@ document.querySelector('#cerrarConfig').addEventListener('click',()=>configDialo
 document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...CONFIG_DEFAULTS,...config,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
 document.querySelector('#restaurarConfig').addEventListener('click',()=>{if(!confirm('¿Restaurar los datos iniciales del contrato?'))return;config={...CONFIG_DEFAULTS};guardarConfig();logoInput.value='';prepararFormularioConfig();document.querySelector('#configMsg').textContent='Se restauraron los datos iniciales.'});
 
-const horarios=Array.from({length:24},(_,hora)=>String(hora).padStart(2,'0')+':00');
+
 
 const form=document.querySelector('#eventoForm'), horaSelect=form.elements.hora, fechaInput=form.elements.fecha;
 function actualizarResta(){const total=Number(form.elements.precio.value||0),anticipo=Number(form.elements.anticipo.value||0);form.elements.resta.value=(form.elements.precio.value||form.elements.anticipo.value)?Math.max(0,total-anticipo):''}
@@ -49,12 +49,13 @@ function minutosHora(h){const [hh,mm]=String(h||'0:0').split(':').map(Number);re
 function duracionMinutos(valor){if(valor==='1 hora y 30 minutos')return 90;if(valor==='2 horas')return 120;return 60}
 function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);const sufijo=hh<12?'AM':'PM';const hora=hh%12||12;return String(hora).padStart(2,'0')+':'+String(mm).padStart(2,'0')+' '+sufijo}
 function seCruzan(inicioA,finA,inicioB,finB){return inicioA<finB&&inicioB<finA}
-function llenarHorarios(){const fecha=fechaInput.value;
-horaSelect.innerHTML='<option value="">Selecciona horario</option>';
-horarios.forEach(h=>{const inicio=minutosHora(h),fin=inicio+duracionMinutos(form.elements.duracion.value);
+function llenarHorarios(){const fecha=fechaInput.value,hora=horaSelect.value;
+if(!fecha||!hora){document.querySelector('#formMsg').textContent='';return}
+const inicio=minutosHora(hora),fin=inicio+duracionMinutos(form.elements.duracion.value);
 const ocupado=eventos.some(e=>{if(e.id===editandoId||e.fecha!==fecha)return false;const otroInicio=minutosHora(e.hora),otroFin=otroInicio+duracionMinutos(e.duracion);return seCruzan(inicio,fin,otroInicio,otroFin)});
-const o=document.createElement('option');o.value=h;o.textContent=horaAMPM(h)+(ocupado?' · OCUPADO':'');o.disabled=ocupado;horaSelect.append(o)})}
+document.querySelector('#formMsg').textContent=ocupado?'Ese horario se cruza con otra reservación. Elige otra hora.':''}
 fechaInput.addEventListener('change',llenarHorarios);
+horaSelect.addEventListener('change',llenarHorarios);
 form.elements.duracion.addEventListener('change',llenarHorarios);
 form.elements.fecha.value=fechaLocal(hoy);
 llenarHorarios();
