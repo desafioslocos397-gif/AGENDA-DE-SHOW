@@ -216,7 +216,8 @@ const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
 const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
 // Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
-escribirCampoPorcentaje(/monterrey/i.test(e.municipio||'')&&!/n\\.?\\s*l\\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,22,27,24,4,18);\nescribirCampoPorcentaje(fecha,55,27,23,4,11);
+escribirCampoPorcentaje(/monterrey/i.test(e.municipio||'')&&!/n\\.?\\s*l\\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,22,27,24,4,18);
+escribirCampoPorcentaje(fecha,55,27,23,4,11);
 escribir(e.cliente,240,349,790,57,20);
 escribirCampoPorcentaje(e.telefono,20,38,27,4,17);
 escribir(hora,717,415,345,55,18);
