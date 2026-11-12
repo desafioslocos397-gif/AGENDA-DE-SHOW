@@ -13,3 +13,6 @@
 .brand-logo{width:46px;height:46px;object-fit:contain;border-radius:9px;background:#fff;padding:3px}.logo-upload{border:1px dashed #d8d2e8;border-radius:11px;padding:12px;background:#fbfaff}.logo-upload small{display:block;color:var(--muted);font-size:11px;line-height:1.45;margin-top:6px}.logo-upload input{background:#fff}.logo-upload img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-top:12px;border-radius:8px;background:#fff;padding:5px;box-shadow:0 2px 10px #17132d12}
 
 #quitarFondoBtn{margin-top:10px;display:block}#pdfBackgroundPreview{max-width:180px;max-height:150px;object-fit:contain}
+
+/* Campos de reserva y selector de color */
+#configForm input[type="color"]{height:46px;padding:4px;cursor:pointer}
