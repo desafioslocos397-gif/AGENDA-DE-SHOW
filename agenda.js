@@ -182,7 +182,7 @@ function escribir(valor,x,y,w,h,tam=12,alineacion='left',negrita=true){
   ctx.fillStyle=config.pdfTextColor||'#141414';
   ctx.textBaseline='middle';
   const maxW=Math.max(5,w-margen*2)*96/25.4;
-  const palabras=String(valor).split(/\\s+/);
+  const palabras=String(valor).split(/\s+/);
   const lineas=[];let linea='';
   palabras.forEach(p=>{const prueba=linea?linea+' '+p:p;if(ctx.measureText(prueba).width>maxW&&linea){lineas.push(linea);linea=p}else linea=prueba});
   if(linea)lineas.push(linea);
