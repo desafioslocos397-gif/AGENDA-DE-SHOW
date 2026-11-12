@@ -203,7 +203,7 @@ const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,
 const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
 // Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
 escribir(/monterrey/i.test(e.municipio||'')&&!/n\.?\s*l\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,190,285,365,53,18);
-escribir(fecha,500,285,562,53,11);
+escribir(fecha,500,285,562,53,11,'right');
 escribir(e.cliente,240,349,790,57,20);
 escribir(e.telefono,205,415,337,55,17);
 escribir(hora,717,415,345,55,18);
