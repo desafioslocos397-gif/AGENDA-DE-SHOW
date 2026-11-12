@@ -16,3 +16,6 @@
 
 /* Campos de reserva y selector de color */
 #configForm input[type="color"]{height:46px;padding:4px;cursor:pointer}
+
+.event-type-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;grid-column:1/-1}
+@media(max-width:560px){.event-type-row{grid-template-columns:1fr}}
