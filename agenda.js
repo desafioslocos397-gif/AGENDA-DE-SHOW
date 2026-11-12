@@ -198,7 +198,7 @@ function escribir(valor,x0,y0,x1,y1,tamMax=30,op={}){
 }
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
 const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
-const fecha=textoFecha(e.fecha);
+const fecha=textoFecha(e.fecha).replace(/ de /g,' ');
 const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
 // El signo $ y la palabra PESOS ya vienen impresos en la plantilla, así que solo se escribe el número.
