@@ -155,7 +155,7 @@ document.querySelector('#clienteWhatsAppBtn').onclick=()=>{
 descargarContratoPDF();
 };
 
-function descargarContratoPDF(){
+async function descargarContratoPDF(){
 if(!seleccionado)return;
 if(!window.jspdf||!window.jspdf.jsPDF){alert('No se pudo cargar el generador de PDF. Revisa tu conexión a internet e inténtalo de nuevo.');return}
 if(!config.pdfBackgroundData){alert('Primero sube la imagen de tu contrato en Personalizar mi contrato.');return}
@@ -164,6 +164,20 @@ const pdf=new jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
 const ancho=pdf.internal.pageSize.getWidth(),alto=pdf.internal.pageSize.getHeight();
 try{pdf.addImage(config.pdfBackgroundData,'JPEG',0,0,ancho,alto,'plantillaContrato','FAST')}catch(err){console.error(err);alert('No se pudo colocar la imagen del contrato. Vuelve a subirla e inténtalo de nuevo.');return}
 const sx=ancho/1087,sy=alto/1407;
+// Leer los colores reales de la plantilla para borrar los textos de ejemplo sin alterar el color de cada recuadro.
+const imagenFondo=new Image();
+try{imagenFondo.src=config.pdfBackgroundData;await imagenFondo.decode()}catch(err){alert('No se pudo leer la imagen de fondo. Vuelve a subirla.');return}
+const canvasFondo=document.createElement('canvas');canvasFondo.width=1087;canvasFondo.height=1407;
+const ctxFondo=canvasFondo.getContext('2d',{willReadFrequently:true});ctxFondo.drawImage(imagenFondo,0,0,1087,1407);
+function escribirCampoPorcentaje(valor,xPct,yPct,wPct,hPct,tam){
+  const x=xPct/100*1087,y=yPct/100*1407,w=wPct/100*1087,h=hPct/100*1407;
+  const px=Math.max(0,Math.min(1086,Math.round(x+w-12)));
+  const py=Math.max(0,Math.min(1406,Math.round(y+h/2)));
+  const muestra=ctxFondo.getImageData(px,py,1,1).data;
+  pdf.setFillColor(muestra[0],muestra[1],muestra[2]);
+  pdf.rect(x*sx,y*sy,w*sx,h*sy,'F');
+  escribir(valor,x,y,w,h,tam,'left',true);
+}
 const color=[20,20,20];
 function escribir(valor,x,y,w,h,tam=12,alineacion='left',negrita=true){
   if(valor===undefined||valor===null||String(valor).trim()==='')return;
@@ -202,10 +216,9 @@ const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
 const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
 // Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
-escribir(/monterrey/i.test(e.municipio||'')&&!/n\.?\s*l\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,190,354,380,53,18,'center');
-escribir(fecha,590,354,232,53,11,'center');
+escribirCampoPorcentaje(/monterrey/i.test(e.municipio||'')&&!/n\\.?\\s*l\\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,22,27,24,4,18);\nescribirCampoPorcentaje(fecha,55,27,23,4,11);
 escribir(e.cliente,240,349,790,57,20);
-escribir(e.telefono,205,465,350,55,17,'center');
+escribirCampoPorcentaje(e.telefono,20,38,27,4,17);
 escribir(hora,717,415,345,55,18);
 escribir(e.domicilio,280,477,782,115,16);
 escribir([e.festejado,e.edad?`Cumple ${e.edad} años`:'' ].filter(Boolean).join(' · '),300,603,730,57,18);
