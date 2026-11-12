@@ -47,7 +47,7 @@ function textoFecha(s){if(!s)return '';
 return new Date(s+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}
 function minutosHora(h){const [hh,mm]=String(h||'0:0').split(':').map(Number);return hh*60+mm}
 function duracionMinutos(valor){if(valor==='1 hora y 30 minutos')return 90;if(valor==='2 horas')return 120;return 60}
-function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')}
+function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);const sufijo=hh<12?'AM':'PM';const hora=hh%12||12;return String(hora).padStart(2,'0')+':'+String(mm).padStart(2,'0')+' '+sufijo}
 function seCruzan(inicioA,finA,inicioB,finB){return inicioA<finB&&inicioB<finA}
 function llenarHorarios(){const fecha=fechaInput.value;
 horaSelect.innerHTML='<option value="">Selecciona horario</option>';
