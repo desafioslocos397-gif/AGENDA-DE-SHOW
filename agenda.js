@@ -155,77 +155,49 @@ descargarContratoPDF();
 function descargarContratoPDF(){
 if(!seleccionado)return;
 if(!window.jspdf||!window.jspdf.jsPDF){alert('No se pudo cargar el generador de PDF. Revisa tu conexión a internet e inténtalo de nuevo.');return}
-const e=seleccionado,{jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'letter'});
-const ancho=pdf.internal.pageSize.getWidth(),altoPagina=pdf.internal.pageSize.getHeight(),margen=16,util=ancho-margen*2;
-// Fondo de imagen a página completa, sin selector de color.
-if(config.pdfBackgroundData){try{pdf.addImage(config.pdfBackgroundData,'JPEG',0,0,ancho,altoPagina,'fondoContrato','FAST')}catch(err){console.warn('No se pudo insertar el fondo del contrato',err)}}
-let y=14;
-const color=[45,40,65],morado=[103,70,220];
-const texto=(s,x,yy,tam=8.5,negrita=false)=>{pdf.setFont('helvetica',negrita?'bold':'normal');pdf.setFontSize(tam);pdf.setTextColor(...color);pdf.text(String(s||'No especificado'),x,yy)};
-const seccion=(t)=>{y+=2;pdf.setFillColor(239,236,250);pdf.roundedRect(margen,y,util,7,1.5,1.5,'F');texto(t.toUpperCase(),margen+3,y+4.8,9,true);y+=11};
-const campo=(etiqueta,valor,x,yy,w)=>{pdf.setFont('helvetica','bold');pdf.setFontSize(8.2);const anchoEtiqueta=pdf.getTextWidth(etiqueta)+4;texto(etiqueta,x,yy,8.2,true);pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const espacio=Math.min(anchoEtiqueta,w*0.48);const lines=pdf.splitTextToSize(String(valor||'No especificado'),Math.max(15,w-espacio));pdf.text(lines,x+espacio,yy);return Math.max(6,lines.length*4.2)};
-const parrafo=(s)=>{pdf.setFont('helvetica','normal');pdf.setFontSize(8.2);const lines=pdf.splitTextToSize(s,util-2);pdf.setTextColor(...color);pdf.text(lines,margen+1,y);y+=lines.length*4.4+2};
+if(!config.pdfBackgroundData){alert('Primero sube la imagen de tu contrato en Personalizar mi contrato.');return}
+const e=seleccionado,{jsPDF}=window.jspdf;
+const pdf=new jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
+const ancho=pdf.internal.pageSize.getWidth(),alto=pdf.internal.pageSize.getHeight();
+try{pdf.addImage(config.pdfBackgroundData,'JPEG',0,0,ancho,alto,'plantillaContrato','FAST')}catch(err){console.error(err);alert('No se pudo colocar la imagen del contrato. Vuelve a subirla e inténtalo de nuevo.');return}
+const sx=ancho/1087,sy=alto/1407;
+const color=[20,20,20];
+function escribir(valor,x,y,w,h,tam=12,alineacion='left',negrita=true){
+  if(valor===undefined||valor===null||String(valor).trim()==='')return;
+  pdf.setFont('helvetica',negrita?'bold':'normal');
+  pdf.setFontSize(tam);
+  pdf.setTextColor(...color);
+  const margen=3*sx;
+  const lineas=pdf.splitTextToSize(String(valor),Math.max(5,w-margen*2));
+  const altoLinea=tam*0.36;
+  const maxLineas=Math.max(1,Math.floor((h-2*sy)/altoLinea));
+  const visibles=lineas.slice(0,maxLineas);
+  const yy=y+h/2-(visibles.length-1)*altoLinea/2+tam*0.12;
+  visibles.forEach((linea,i)=>{
+    if(alineacion==='center')pdf.text(linea,x+w/2,yy+i*altoLinea,{align:'center'});
+    else if(alineacion==='right')pdf.text(linea,x+w-margen,yy+i*altoLinea,{align:'right'});
+    else pdf.text(linea,x+margen,yy+i*altoLinea);
+  });
+}
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
 const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
-const mitad=(util-12)/2;
-// Encabezado amplio
-pdf.setFillColor(35,28,65);pdf.roundedRect(margen,y,util,29,2.5,2.5,'F');
-pdf.setTextColor(255,255,255);pdf.setFont('helvetica','bold');pdf.setFontSize(19);
-const inicioTexto=config.logoData?margen+32:margen+7;
-if(config.logoData){try{pdf.addImage(config.logoData,'JPEG',margen+6,y+4,22,22,'logoShow','FAST')}catch(err){console.warn('No se pudo insertar el logotipo en el PDF',err)}}
-pdf.text(String(config.showName||'SHOW').toUpperCase(),inicioTexto,y+11);
-pdf.setFontSize(11);pdf.text('CONTRATO DE SERVICIO DE SHOW',inicioTexto,y+19);
-pdf.setFont('helvetica','normal');pdf.setFontSize(8);
-pdf.text(('TikTok: '+(config.tiktok||'')+'  |  Facebook: '+(config.facebook||'')+'  |  YouTube: '+(config.youtube||'')).slice(0,115),inicioTexto,y+25);
-y+=35;
-if(config.instagram)texto('Instagram: '+config.instagram,margen,y,8.5);
-y+=5;
-texto('WhatsApp: '+(config.whatsapp||'No especificado'),margen,y,9,true);
-y+=8;
-// Datos del evento
-seccion('Datos del evento');
-let y1=y,y2=y;
-y1+=campo('MUNICIPIO:',e.municipio,margen,y1,mitad);
-y2+=campo('FECHA:',textoFecha(e.fecha),margen+mitad+12,y2,mitad);
-y=Math.max(y1,y2)+4;
-y1=y;y2=y;
-y1+=campo('NOMBRE:',e.cliente,margen,y1,mitad);
-y2+=campo('TELÉFONO:',e.telefono,margen+mitad+12,y2,mitad);
-y=Math.max(y1,y2)+4;
-y1=y;y2=y;
-y1+=campo('HORARIO:',horaAMPM(e.hora)+' a '+horaAMPM(horaFin),margen,y1,mitad);
-y2+=campo('FESTEJADO:',e.festejado||'No especificado',margen+mitad+12,y2,mitad);
-y=Math.max(y1,y2)+4;
-texto('LUGAR DEL EVENTO:',margen,y,8.2,true);y+=5;pdf.setFont('helvetica','normal');pdf.setFontSize(8.5);pdf.setTextColor(...color);const direccionLines=pdf.splitTextToSize(String(e.domicilio||'No especificado'),util-4);pdf.text(direccionLines,margen+2,y);y+=Math.max(6,direccionLines.length*4.2)+2;
-// Qué incluye
-seccion('Qué incluye nuestro show');
-const incluye=String(config.includes||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-const colW=util/3;
-incluye.forEach((item,i)=>{const col=i%3,fila=Math.floor(i/3);texto('• '+item,margen+col*colW,y+fila*7,7.6,true)});
-y+=Math.ceil(incluye.length/3)*7+3;
-// Términos
-seccion('Términos y condiciones');
-const clausulas=String(config.clauses||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-clausulas.forEach(parrafo);
-// Costos en tres columnas amplias
-seccion('Costos');
-const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=total-anticipo;
-const costos=[['COSTO TOTAL:',total?'$'+total.toLocaleString('es-MX')+' PESOS':'Por confirmar'],['ANTICIPO:',anticipo?'$'+anticipo.toLocaleString('es-MX')+' PESOS':'Por confirmar'],['RESTA:',total?'$'+resta.toLocaleString('es-MX')+' PESOS':'Por confirmar']];
-costos.forEach((c,i)=>{const x=margen+i*(util/3);pdf.setFillColor(247,246,251);pdf.roundedRect(x,y,util/3-3,15,1.5,1.5,'F');texto(c[0],x+3,y+5,7.5,true);texto(c[1],x+3,y+11,8.5,true)});
-y+=21;
-// Firmas con espacio amplio
-seccion('Firmas');
-const firmaY=y+13;
-pdf.setDrawColor(90);pdf.setLineWidth(0.4);
-texto('CONTRATANTE:',margen,firmaY,8,true);
-pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(...color);
-const nombreCliente=pdf.splitTextToSize(String(e.cliente||'No especificado'),mitad-25);
-pdf.text(nombreCliente,margen+28,firmaY);
-const xRep=margen+util/2+6;
-pdf.line(xRep,firmaY-2,xRep+mitad-8,firmaY-2);
-texto('FIRMA DEL REPRESENTANTE',xRep,firmaY+5,7.5,true);
-texto(config.representative||'REPRESENTANTE',xRep,firmaY+10,9,true);
-texto((config.showName||'SHOW')+'  ·  WhatsApp: '+(config.whatsapp||''),margen,altoPagina-9,7.5);
+const fecha=textoFecha(e.fecha);
+const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
+const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
+const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
+// Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
+escribir(e.municipio,28,285,530,53,15);
+escribir(fecha,717,285,345,53,15);
+escribir(e.cliente,240,349,790,57,17);
+escribir(e.telefono,257,415,285,55,15);
+escribir(hora,717,415,345,55,15);
+escribir(e.domicilio,382,477,680,115,14);
+escribir(e.festejado,390,603,640,57,16);
+escribir(pesos(total),200,1208,184,97,17,'center');
+escribir(pesos(anticipo),598,1208,143,97,17,'center');
+escribir(pesos(resta),898,1208,183,97,17,'center');
+escribir(e.cliente,182,1323,444,57,15,'center');
+escribir(config.representative||'REPRESENTANTE',840,1323,237,57,13,'center');
 const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
