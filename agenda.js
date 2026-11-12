@@ -2,7 +2,7 @@ const STORAGE_KEY='desafiosLocosAgendaV1';
 const CONFIG_KEY='agendaShowConfigV1';
 const CONFIG_DEFAULTS={
 showName:'DESAFÍOS LOCOS',logoData:'',pdfBackgroundData:'',representative:'DANIEL LEON',whatsapp:'811 027 6858',
-tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',
+tiktok:'@desafiolocosmtv',facebook:'Desafios locos mtv',youtube:'@DESAFIOSLOCOS',instagram:'desafioslocosmtv',pdfTextColor:'#141414',
 includes:'1 HORA DE SHOW 100% DINÁMICO\nANIMACIÓN CÓMICA\nPREMIOS PARA CONCURSANTES\nDESAFÍOS Y CONCURSOS\nLLUVIA DE BURBUJAS\nPELOTAS GIGANTES\nCARNAVAL Y BANDERINES\nPARTICIPACIÓN EN EL PASTEL\nEQUIPO DE SONIDO',
 clauses:'1. Cada contratación requiere de un anticipo para apartar fecha y horario del evento.\n2. En caso de que el artista no pueda presentarse, otro cubrirá su lugar siendo de la misma calidad.\n3. En caso de cancelar su evento, su anticipo no será devuelto.\n4. Firme si usted está de acuerdo.\n5. No se pueden entregar alimentos durante el show ni dulces, etc.\n6. Los inflables se tienen que apagar durante el show; no debe haber ninguna distracción durante el show.'
 };
@@ -47,6 +47,7 @@ function textoFecha(s){if(!s)return '';
 return new Date(s+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}
 function minutosHora(h){const [hh,mm]=String(h||'0:0').split(':').map(Number);return hh*60+mm}
 function duracionMinutos(valor){if(valor==='1 hora y 30 minutos')return 90;if(valor==='2 horas')return 120;return 60}
+function tipoEventoTexto(e){return e.tipo==='OTRO'?(e.tipoOtro||'OTRO'):((e.tipo||'')+(e.tipoOtro?' - '+e.tipoOtro:''))}
 function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);const sufijo=hh<12?'AM':'PM';const hora=hh%12||12;return String(hora).padStart(2,'0')+':'+String(mm).padStart(2,'0')+' '+sufijo}
 function seCruzan(inicioA,finA,inicioB,finB){return inicioA<finB&&inicioB<finA}
 function llenarHorarios(){const fecha=fechaInput.value,hora=horaSelect.value;
@@ -112,7 +113,7 @@ llenarHorarios();
 function abrirDetalle(id){seleccionado=eventos.find(e=>e.id===id);
 if(!seleccionado)return;
 const e=seleccionado;
-const campos=[['Cliente',e.cliente],['Festejado(a)',e.festejado||'No especificado'],['Municipio',e.municipio||'No especificado'],['Teléfono',e.telefono],['Fecha',textoFecha(e.fecha)],['Horario',horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0'))],['Tipo',e.tipo],['Duración',e.duracion],['Domicilio',e.domicilio],['Costo total',e.precio||'No especificado'],['Anticipo',e.anticipo||'No especificado'],['Resta',Math.max(0,Number(e.precio||0)-Number(e.anticipo||0))],['Notas',e.notas||'Sin notas']]
+const campos=[['Cliente',e.cliente],['Festejado(a)',e.festejado||'No especificado'],['Tipo de evento',tipoEventoTexto(e)||'No especificado'],['Municipio',e.municipio||'No especificado'],['Teléfono',e.telefono],['Fecha',textoFecha(e.fecha)],['Horario',horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0'))],['Duración',e.duracion],['Domicilio',e.domicilio],['Costo total',e.precio||'No especificado'],['Anticipo',e.anticipo||'No especificado'],['Resta',Math.max(0,Number(e.precio||0)-Number(e.anticipo||0))],['Notas',e.notas||'Sin notas']]
 const cont=document.querySelector('#detalleContenido');
 cont.innerHTML='<div class="detail-grid">'+campos.map(([k,v])=>'<div class="detail '+(k==='Domicilio'||k==='Notas'?'wide':'')+'"><small>'+k+'</small><b></b></div>').join('')+'</div>';
 cont.querySelectorAll('.detail b').forEach((b,i)=>b.textContent=campos[i][1]);
@@ -143,7 +144,7 @@ llenarHorarios();
 };
 
 
-function mensajeWhats(e){const total=e.precio||'Por confirmar',anticipo=e.anticipo||'Por confirmar',resta=e.precio?Math.max(0,Number(e.precio)-Number(e.anticipo||0)):'Por confirmar';return 'Hola, te comparto los datos de la reservación de '+encodeURIComponent(config.showName)+':%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0')))+'%0AEvento: '+encodeURIComponent(e.tipo)+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0ACosto total: '+encodeURIComponent(total)+'%0AAnticipo: '+encodeURIComponent(anticipo)+'%0AResta: '+encodeURIComponent(resta)+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
+function mensajeWhats(e){const total=e.precio||'Por confirmar',anticipo=e.anticipo||'Por confirmar',resta=e.precio?Math.max(0,Number(e.precio)-Number(e.anticipo||0)):'Por confirmar';return 'Hola, te comparto los datos de la reservación de '+encodeURIComponent(config.showName)+':%0A%0ACliente: '+encodeURIComponent(e.cliente)+'%0ATeléfono: '+encodeURIComponent(e.telefono)+'%0AFecha: '+encodeURIComponent(textoFecha(e.fecha))+'%0AHorario: '+encodeURIComponent(horaAMPM(e.hora)+' - '+horaAMPM(String(Math.floor((minutosHora(e.hora)+duracionMinutos(e.duracion))/60)%24).padStart(2,'0')+':'+String((minutosHora(e.hora)+duracionMinutos(e.duracion))%60).padStart(2,'0')))+'%0ATipo de evento: '+encodeURIComponent(tipoEventoTexto(e))+'%0ADuración: '+encodeURIComponent(e.duracion)+'%0ADomicilio: '+encodeURIComponent(e.domicilio)+'%0ACosto total: '+encodeURIComponent(total)+'%0AAnticipo: '+encodeURIComponent(anticipo)+'%0AResta: '+encodeURIComponent(resta)+'%0ANotas: '+encodeURIComponent(e.notas||'Ninguna')}
 function abrirWhatsApp(numero){if(!seleccionado)return;
 const tel=numero.replace(/\D/g,'');
 const url='https://wa.me/'+tel+'?text='+mensajeWhats(seleccionado);
@@ -168,20 +169,31 @@ function escribir(valor,x,y,w,h,tam=12,alineacion='left',negrita=true){
   if(valor===undefined||valor===null||String(valor).trim()==='')return;
   // Las coordenadas están definidas en píxeles de la plantilla original; convertirlas a milímetros del PDF.
   x*=sx;y*=sy;w*=sx;h*=sy;
-  pdf.setFont('helvetica',negrita?'bold':'normal');
-  pdf.setFontSize(tam);
-  pdf.setTextColor(...color);
   const margen=3*sx;
-  const lineas=pdf.splitTextToSize(String(valor),Math.max(5,w-margen*2));
-  const altoLinea=tam*0.36;
-  const maxLineas=Math.max(1,Math.floor((h-2*sy)/altoLinea));
+  const canvas=document.createElement('canvas');
+  const escala=3;
+  canvas.width=Math.max(1,Math.round(w*96/25.4*escala));
+  canvas.height=Math.max(1,Math.round(h*96/25.4*escala));
+  const ctx=canvas.getContext('2d');
+  ctx.scale(escala,escala);
+  const pxW=canvas.width/escala,pxH=canvas.height/escala;
+  const tamPx=tam*96/72;
+  ctx.font=`${negrita?'bold ':''}${tamPx}px "Arial Black", Arial, sans-serif`;
+  ctx.fillStyle=config.pdfTextColor||'#141414';
+  ctx.textBaseline='middle';
+  const maxW=Math.max(5,w-margen*2)*96/25.4;
+  const palabras=String(valor).split(/\\s+/);
+  const lineas=[];let linea='';
+  palabras.forEach(p=>{const prueba=linea?linea+' '+p:p;if(ctx.measureText(prueba).width>maxW&&linea){lineas.push(linea);linea=p}else linea=prueba});
+  if(linea)lineas.push(linea);
+  const altoLinea=tamPx*1.18;
+  const maxLineas=Math.max(1,Math.floor((pxH-4)/altoLinea));
   const visibles=lineas.slice(0,maxLineas);
-  const yy=y+h/2-(visibles.length-1)*altoLinea/2+tam*0.12;
-  visibles.forEach((linea,i)=>{
-    if(alineacion==='center')pdf.text(linea,x+w/2,yy+i*altoLinea,{align:'center'});
-    else if(alineacion==='right')pdf.text(linea,x+w-margen,yy+i*altoLinea,{align:'right'});
-    else pdf.text(linea,x+margen,yy+i*altoLinea);
-  });
+  const yy=pxH/2-(visibles.length-1)*altoLinea/2;
+  ctx.textAlign=alineacion==='center'?'center':alineacion==='right'?'right':'left';
+  const xx=alineacion==='center'?pxW/2:alineacion==='right'?pxW-margen*96/25.4:margen*96/25.4;
+  visibles.forEach((linea,i)=>ctx.fillText(linea,xx,yy+i*altoLinea));
+  pdf.addImage(canvas.toDataURL('image/png'),'PNG',x,y,w,h,undefined,'FAST');
 }
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
 const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
@@ -197,6 +209,7 @@ escribir(e.telefono,257,415,285,55,18);
 escribir(hora,717,415,345,55,18);
 escribir(e.domicilio,382,477,680,115,17);
 escribir([e.festejado,e.edad?`Cumple ${e.edad} años`:'' ].filter(Boolean).join(' · '),390,603,640,57,19);
+escribir('Tipo de evento: '+tipoEventoTexto(e),390,665,640,52,17);
 escribir(pesos(total),200,1208,184,97,23,'center');
 escribir(pesos(anticipo),598,1208,143,97,23,'center');
 escribir(pesos(resta),898,1208,183,97,23,'center');
