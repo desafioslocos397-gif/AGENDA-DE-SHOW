@@ -202,14 +202,14 @@ const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
 const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
 // Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
-escribir(/monterrey/i.test(e.municipio||'')&&!/n\.?\s*l\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,120,285,435,53,18);
-escribir(fecha,430,285,632,53,11);
+escribir(/monterrey/i.test(e.municipio||'')&&!/n\.?\s*l\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,160,285,395,53,18);
+escribir(fecha,465,285,597,53,11);
 escribir(e.cliente,240,349,790,57,20);
 escribir(e.telefono,205,415,337,55,17);
 escribir(hora,717,415,345,55,18);
 escribir(e.domicilio,280,477,782,115,16);
 escribir([e.festejado,e.edad?`Cumple ${e.edad} años`:'' ].filter(Boolean).join(' · '),300,603,730,57,18);
-escribir(tipoEventoTexto(e),155,665,875,52,16);
+escribir(tipoEventoTexto(e),120,665,910,52,16);
 escribir(pesos(total),200,1208,184,97,23,'center');
 escribir(pesos(anticipo),598,1208,143,97,23,'center');
 escribir(pesos(resta),898,1208,183,97,23,'center');
