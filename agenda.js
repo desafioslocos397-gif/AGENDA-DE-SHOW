@@ -189,13 +189,13 @@ const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
 const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
 // Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
-escribir(e.municipio,250,285,307,53,19);
+escribir(e.municipio,360,285,195,53,19);
 escribir(fecha,717,285,345,53,18);
 escribir(e.cliente,240,349,790,57,20);
 escribir(e.telefono,257,415,285,55,18);
 escribir(hora,717,415,345,55,18);
 escribir(e.domicilio,382,477,680,115,17);
-escribir(e.festejado,390,603,640,57,19);
+escribir([e.festejado,e.edad?`Cumple ${e.edad} años`:'' ].filter(Boolean).join(' · '),390,603,640,57,19);
 escribir(pesos(total),200,1208,184,97,23,'center');
 escribir(pesos(anticipo),598,1208,143,97,23,'center');
 escribir(pesos(resta),898,1208,183,97,23,'center');
