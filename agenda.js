@@ -164,72 +164,62 @@ const pdf=new jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
 const ancho=pdf.internal.pageSize.getWidth(),alto=pdf.internal.pageSize.getHeight();
 try{pdf.addImage(config.pdfBackgroundData,'JPEG',0,0,ancho,alto,'plantillaContrato','FAST')}catch(err){console.error(err);alert('No se pudo colocar la imagen del contrato. Vuelve a subirla e inténtalo de nuevo.');return}
 const sx=ancho/1087,sy=alto/1407;
-// Leer los colores reales de la plantilla para borrar los textos de ejemplo sin alterar el color de cada recuadro.
-const imagenFondo=new Image();
-try{imagenFondo.src=config.pdfBackgroundData;await imagenFondo.decode()}catch(err){alert('No se pudo leer la imagen de fondo. Vuelve a subirla.');return}
-const canvasFondo=document.createElement('canvas');canvasFondo.width=1087;canvasFondo.height=1407;
-const ctxFondo=canvasFondo.getContext('2d',{willReadFrequently:true});ctxFondo.drawImage(imagenFondo,0,0,1087,1407);
-function escribirCampoPorcentaje(valor,xPct,yPct,wPct,hPct,tam){
-  const x=xPct/100*1087,y=yPct/100*1407,w=wPct/100*1087,h=hPct/100*1407;
-  const px=Math.max(0,Math.min(1086,Math.round(x+w-12)));
-  const py=Math.max(0,Math.min(1406,Math.round(y+h/2)));
-  const muestra=ctxFondo.getImageData(px,py,1,1).data;
-  pdf.setFillColor(muestra[0],muestra[1],muestra[2]);
-  pdf.rect(x*sx,y*sy,w*sx,h*sy,'F');
-  escribir(valor,x,y,w,h,tam,'left',true);
-}
-const color=[20,20,20];
-function escribir(valor,x,y,w,h,tam=12,alineacion='left',negrita=true){
+// Todas las coordenadas están en píxeles de la plantilla (1087 x 1407): x0,y0 = esquina superior izquierda
+// del espacio en blanco (justo DESPUÉS de los dos puntos) y x1,y1 = esquina inferior derecha.
+// El texto se achica solo hasta caber dentro de ese espacio; nunca se sale ni se corta.
+function escribir(valor,x0,y0,x1,y1,tamMax=30,op={}){
   if(valor===undefined||valor===null||String(valor).trim()==='')return;
-  // Las coordenadas están definidas en píxeles de la plantilla original; convertirlas a milímetros del PDF.
-  x*=sx;y*=sy;w*=sx;h*=sy;
-  const margen=3*sx;
+  const texto=String(valor).trim(),w=x1-x0,h=y1-y0,k=4,pad=6;
   const canvas=document.createElement('canvas');
-  const escala=3;
-  canvas.width=Math.max(1,Math.round(w*96/25.4*escala));
-  canvas.height=Math.max(1,Math.round(h*96/25.4*escala));
+  canvas.width=Math.max(1,Math.round(w*k));canvas.height=Math.max(1,Math.round(h*k));
   const ctx=canvas.getContext('2d');
-  ctx.scale(escala,escala);
-  const pxW=canvas.width/escala,pxH=canvas.height/escala;
-  const tamPx=tam*96/72;
-  ctx.font=`${negrita?'bold ':''}${tamPx}px "Arial Black", Arial, sans-serif`;
+  ctx.scale(k,k);
   ctx.fillStyle=config.pdfTextColor||'#141414';
   ctx.textBaseline='middle';
-  const maxW=Math.max(5,w-margen*2)*96/25.4;
-  const palabras=String(valor).split(/\s+/);
-  const lineas=[];let linea='';
-  palabras.forEach(p=>{const prueba=linea?linea+' '+p:p;if(ctx.measureText(prueba).width>maxW&&linea){lineas.push(linea);linea=p}else linea=prueba});
-  if(linea)lineas.push(linea);
-  const altoLinea=tamPx*1.18;
-  const maxLineas=Math.max(1,Math.floor((pxH-4)/altoLinea));
-  const visibles=lineas.slice(0,maxLineas);
-  const yy=pxH/2-(visibles.length-1)*altoLinea/2;
-  ctx.textAlign=alineacion==='center'?'center':alineacion==='right'?'right':'left';
-  const xx=alineacion==='center'?pxW/2:alineacion==='right'?pxW-margen*96/25.4:margen*96/25.4;
-  visibles.forEach((linea,i)=>ctx.fillText(linea,xx,yy+i*altoLinea));
-  pdf.addImage(canvas.toDataURL('image/png'),'PNG',x,y,w,h,undefined,'FAST');
+  ctx.textAlign=op.centro?'center':'left';
+  const maxW=w-pad*2,maxLineas=op.lineas||1,minTam=op.minTam||9;
+  let tam=tamMax,lineas=[];
+  const partir=()=>{
+    ctx.font='bold '+tam+'px "Arial Black", Arial, sans-serif';
+    const res=[];let l='';
+    texto.split(/\s+/).forEach(p=>{const prueba=l?l+' '+p:p;if(ctx.measureText(prueba).width>maxW&&l){res.push(l);l=p}else l=prueba});
+    if(l)res.push(l);
+    return res;
+  };
+  const cabe=()=>lineas.length<=maxLineas&&lineas.every(l=>ctx.measureText(l).width<=maxW)&&lineas.length*tam*1.2<=h-(op.arriba?op.arriba-tam*0.6:0);
+  lineas=partir();
+  while(!cabe()&&tam>minTam){tam-=1;lineas=partir()}
+  const altoLinea=tam*1.2;
+  // op.arriba = altura (px) donde va el centro del primer renglón (para el cuadro grande de "Lugar del evento")
+  const y1ra=op.arriba?op.arriba:(h-(lineas.length-1)*altoLinea)/2;
+  const xx=op.centro?w/2:pad;
+  lineas.forEach((l,i)=>ctx.fillText(l,xx,y1ra+i*altoLinea));
+  pdf.addImage(canvas.toDataURL('image/png'),'PNG',x0*sx,y0*sy,w*sx,h*sy,undefined,'FAST');
 }
 const fin=minutosHora(e.hora)+duracionMinutos(e.duracion);
 const horaFin=String(Math.floor(fin/60)%24).padStart(2,'0')+':'+String(fin%60).padStart(2,'0');
 const fecha=textoFecha(e.fecha);
 const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
-const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
-// Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
-escribirCampoPorcentaje(/monterrey/i.test(e.municipio||'')&&!/n\\.?\\s*l\\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio,22,27,24,4,18);
-escribirCampoPorcentaje(fecha,55,27,23,4,11);
-escribir(e.cliente,240,349,790,57,20);
-escribirCampoPorcentaje(e.telefono,20,38,27,4,17);
-escribir(hora,717,415,345,55,18);
-escribir(e.domicilio,280,477,782,115,16);
-escribir([e.festejado,e.edad?`Cumple ${e.edad} años`:'' ].filter(Boolean).join(' · '),300,603,730,57,18);
-escribir(tipoEventoTexto(e),145,663,470,52,16,'center');
-escribir(pesos(total),200,1208,184,97,23,'center');
-escribir(pesos(anticipo),598,1208,143,97,23,'center');
-escribir(pesos(resta),898,1208,183,97,23,'center');
-escribir(e.cliente,182,1323,444,57,18,'center');
-escribir(config.representative||'REPRESENTANTE',840,1323,237,57,16,'center');
-const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+// El signo $ y la palabra PESOS ya vienen impresos en la plantilla, así que solo se escribe el número.
+const pesos=n=>n?n.toLocaleString('es-MX'):'';
+const municipio=/monterrey/i.test(e.municipio||'')&&!/n\.?\s*l\.?/i.test(e.municipio||'')?e.municipio+', N.L.':e.municipio;
+const festejadoTxt=[e.festejado,e.edad?'Cumple '+e.edad+' años':''].filter(Boolean).join(' · ');
+//        texto              x0   y0    x1    y1   tamaño  opciones
+escribir(municipio,          248, 287,  551,  335, 30);
+escribir(fecha,              699, 287, 1053,  335, 30);
+escribir(e.cliente,          209, 351, 1053,  403, 30);
+escribir(e.telefono,         225, 415,  531,  467, 30);
+escribir(hora,               699, 415, 1056,  470, 30);
+escribir(e.domicilio,        299, 477, 1053,  589, 28, {lineas:3,arriba:26});
+escribir(festejadoTxt,       312, 602, 1053,  656, 30);
+escribir(tipoEventoTexto(e), 245, 667,  670,  718, 28);
+escribir(pesos(total),       209,1221,  377, 1280, 34, {centro:true});
+escribir(pesos(anticipo),    593,1221,  734, 1280, 34, {centro:true});
+escribir(pesos(resta),       902,1221, 1060, 1280, 34, {centro:true});
+escribir(e.cliente,          235,1324,  621, 1379, 28);
+escribir(config.representative||'',858,1324,1072,1379, 26);
+const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
 document.querySelector('#eliminarBtn').onclick=()=>{
