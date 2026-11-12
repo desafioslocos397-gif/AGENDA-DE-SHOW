@@ -19,6 +19,7 @@ document.querySelector('#quitarFondoBtn').addEventListener('click',()=>{config.p
 const logoInput=document.querySelector('#logoInput');
 logoInput.addEventListener('change',()=>{const archivo=logoInput.files&&logoInput.files[0];if(!archivo)return;if(!archivo.type.startsWith('image/')){alert('Selecciona una imagen válida.');logoInput.value='';return}const lector=new FileReader();lector.onload=()=>{const imagen=new Image();imagen.onload=()=>{const escala=Math.min(1,600/Math.max(imagen.width,imagen.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(imagen.width*escala));canvas.height=Math.max(1,Math.round(imagen.height*escala));canvas.getContext('2d').drawImage(imagen,0,0,canvas.width,canvas.height);config.logoData=canvas.toDataURL('image/jpeg',0.86);try{guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Logotipo guardado. También aparecerá en el contrato PDF.'}catch(err){config.logoData='';alert('La imagen es demasiado grande para guardarla. Prueba con otra más pequeña.')}};imagen.onerror=()=>alert('No se pudo abrir esa imagen.');imagen.src=lector.result};lector.readAsDataURL(archivo)});
 actualizarLogotipo()
+document.querySelector('#quitarLogoBtn').addEventListener('click',()=>{config.logoData='';logoInput.value='';guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Se quitó la imagen del logotipo.'});
 const configDialog=document.querySelector('#configDialog');
 document.querySelector('#configurarContratoBtn').addEventListener('click',()=>{prepararFormularioConfig();document.querySelector('#configMsg').textContent='';configDialog.showModal()});
 document.querySelector('#cerrarConfig').addEventListener('click',()=>configDialog.close());
@@ -188,18 +189,18 @@ const hora=horaAMPM(e.hora)+' - '+horaAMPM(horaFin);
 const total=Number(e.precio||0),anticipo=Number(e.anticipo||0),resta=Math.max(0,total-anticipo);
 const pesos=n=>n?'$'+n.toLocaleString('es-MX'):'';
 // Los cuadros se mapean sobre la plantilla cargada; no se dibujan cajas nuevas.
-escribir(e.municipio,285,285,272,53,17);
-escribir(fecha,717,285,345,53,16);
-escribir(e.cliente,240,349,790,57,18);
-escribir(e.telefono,257,415,285,55,16);
-escribir(hora,717,415,345,55,16);
-escribir(e.domicilio,382,477,680,115,15);
-escribir(e.festejado,390,603,640,57,17);
-escribir(pesos(total),200,1208,184,97,18,'center');
-escribir(pesos(anticipo),598,1208,143,97,18,'center');
-escribir(pesos(resta),898,1208,183,97,18,'center');
-escribir(e.cliente,182,1323,444,57,16,'center');
-escribir(config.representative||'REPRESENTANTE',840,1323,237,57,14,'center');
+escribir(e.municipio,250,285,307,53,19);
+escribir(fecha,717,285,345,53,18);
+escribir(e.cliente,240,349,790,57,20);
+escribir(e.telefono,257,415,285,55,18);
+escribir(hora,717,415,345,55,18);
+escribir(e.domicilio,382,477,680,115,17);
+escribir(e.festejado,390,603,640,57,19);
+escribir(pesos(total),200,1208,184,97,23,'center');
+escribir(pesos(anticipo),598,1208,143,97,23,'center');
+escribir(pesos(resta),898,1208,183,97,23,'center');
+escribir(e.cliente,182,1323,444,57,18,'center');
+escribir(config.representative||'REPRESENTANTE',840,1323,237,57,16,'center');
 const nombre=(e.cliente||'cliente').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
 pdf.save('Contrato_Desafios_Locos_'+nombre+'.pdf');
 }
