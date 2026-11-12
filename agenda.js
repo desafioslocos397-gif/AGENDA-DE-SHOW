@@ -164,6 +164,8 @@ const sx=ancho/1087,sy=alto/1407;
 const color=[20,20,20];
 function escribir(valor,x,y,w,h,tam=12,alineacion='left',negrita=true){
   if(valor===undefined||valor===null||String(valor).trim()==='')return;
+  // Las coordenadas están definidas en píxeles de la plantilla original; convertirlas a milímetros del PDF.
+  x*=sx;y*=sy;w*=sx;h*=sy;
   pdf.setFont('helvetica',negrita?'bold':'normal');
   pdf.setFontSize(tam);
   pdf.setTextColor(...color);
