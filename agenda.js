@@ -26,7 +26,7 @@ document.querySelector('#cerrarConfig').addEventListener('click',()=>configDialo
 document.querySelector('#configForm').addEventListener('submit',ev=>{ev.preventDefault();config={...CONFIG_DEFAULTS,...config,...Object.fromEntries(new FormData(ev.currentTarget).entries())};guardarConfig();actualizarLogotipo();document.querySelector('#configMsg').textContent='Tu contrato quedó guardado en este navegador.'});
 document.querySelector('#restaurarConfig').addEventListener('click',()=>{if(!confirm('¿Restaurar los datos iniciales del contrato?'))return;config={...CONFIG_DEFAULTS};guardarConfig();logoInput.value='';prepararFormularioConfig();document.querySelector('#configMsg').textContent='Se restauraron los datos iniciales.'});
 
-const horarios=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+const horarios=Array.from({length:24},(_,hora)=>String(hora).padStart(2,'0')+':00');
 
 const form=document.querySelector('#eventoForm'), horaSelect=form.elements.hora, fechaInput=form.elements.fecha;
 function actualizarResta(){const total=Number(form.elements.precio.value||0),anticipo=Number(form.elements.anticipo.value||0);form.elements.resta.value=(form.elements.precio.value||form.elements.anticipo.value)?Math.max(0,total-anticipo):''}
@@ -47,7 +47,7 @@ function textoFecha(s){if(!s)return '';
 return new Date(s+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}
 function minutosHora(h){const [hh,mm]=String(h||'0:0').split(':').map(Number);return hh*60+mm}
 function duracionMinutos(valor){if(valor==='1 hora y 30 minutos')return 90;if(valor==='2 horas')return 120;return 60}
-function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);const sufijo=hh>=12?'PM':'AM';const hora=hh%12||12;return hora+':'+String(mm).padStart(2,'0')+' '+sufijo}
+function horaAMPM(h){const [hh,mm]=h.split(':').map(Number);return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')}
 function seCruzan(inicioA,finA,inicioB,finB){return inicioA<finB&&inicioB<finA}
 function llenarHorarios(){const fecha=fechaInput.value;
 horaSelect.innerHTML='<option value="">Selecciona horario</option>';
