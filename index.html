@@ -24,6 +24,12 @@
       <article><span>Eventos de este mes</span><b id="eventosMes">0</b></article>
       <article><span>Próximo evento</span><b id="proximoEvento">—</b></article>
     </section>
+    <section class="panel backup-panel">
+      <div class="panel-head"><div><p class="eyebrow">RESPALDO</p><h2>Copia de seguridad</h2></div></div>
+      <p class="config-help">Guarda tus eventos y tu contrato en un archivo. Úsalo para no perderlos o para pasarlos de un navegador a la app.</p>
+      <div class="form-actions"><button class="btn primary" id="exportarBtn" type="button">⬇ Exportar respaldo</button><button class="btn secondary" id="importarBtn" type="button">⬆ Importar respaldo</button><input id="importarInput" type="file" accept=".json,application/json" hidden></div>
+      <p id="respaldoMsg" class="message" aria-live="polite"></p>
+    </section>
     <div class="columns">
       <section class="panel">
         <div class="panel-head"><div><p class="eyebrow">NUEVA RESERVACIÓN</p><h2>Datos del evento</h2></div><span class="tag">1 · Registro</span></div>

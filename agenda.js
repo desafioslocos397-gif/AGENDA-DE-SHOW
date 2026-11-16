@@ -231,3 +231,49 @@ document.querySelector('#eliminarBtn').onclick=()=>{
 };
 
 actualizar();
+
+// ===== Respaldo: exportar / importar =====
+(function(){
+  const msg=document.querySelector('#respaldoMsg');
+  const input=document.querySelector('#importarInput');
+  function aviso(t){msg.textContent=t}
+  document.querySelector('#exportarBtn').addEventListener('click',()=>{
+    const datos={app:'agenda-desafios-locos',version:1,fecha:new Date().toISOString(),eventos:eventos,config:config};
+    const blob=new Blob([JSON.stringify(datos)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='respaldo-agenda-'+fechaLocal(new Date())+'.json';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    aviso('Respaldo descargado ('+eventos.length+' eventos). Guárdalo en un lugar seguro.');
+  });
+  document.querySelector('#importarBtn').addEventListener('click',()=>input.click());
+  input.addEventListener('change',()=>{
+    const archivo=input.files&&input.files[0];
+    if(!archivo)return;
+    const lector=new FileReader();
+    lector.onload=()=>{
+      try{
+        const datos=JSON.parse(lector.result);
+        if(!datos||datos.app!=='agenda-desafios-locos'||!Array.isArray(datos.eventos))throw new Error('formato');
+        const idsActuales=new Set(eventos.map(e=>e.id));
+        const nuevos=datos.eventos.filter(e=>e&&e.id&&e.fecha&&!idsActuales.has(e.id));
+        if(!confirm('Se agregarán '+nuevos.length+' eventos nuevos al respaldo ('+(datos.eventos.length-nuevos.length)+' ya existían). ¿Continuar?')){input.value='';return}
+        eventos=[...eventos,...nuevos];
+        guardar();
+        if(datos.config&&typeof datos.config==='object'&&confirm('El respaldo incluye los datos de tu contrato (logo, fondo, textos). ¿Reemplazar los actuales?')){
+          config={...CONFIG_DEFAULTS,...datos.config};
+          try{guardarConfig()}catch(err){aviso('Eventos importados, pero el contrato era muy grande para guardarlo.');actualizar();input.value='';return}
+          actualizarLogotipo();
+        }
+        actualizar();
+        aviso('Listo: se importaron '+nuevos.length+' eventos.');
+      }catch(err){
+        aviso('No se pudo leer ese archivo. Elige un respaldo exportado desde esta agenda.');
+      }
+      input.value='';
+    };
+    lector.onerror=()=>aviso('No se pudo abrir el archivo.');
+    lector.readAsText(archivo);
+  });
+})();
